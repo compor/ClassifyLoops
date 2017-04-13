@@ -25,7 +25,7 @@ function(get_version version)
 endfunction()
 
 
-function(AttachCompilationDBCommand trgt)
+function(attach_compilation_db_command trgt)
   if(NOT TARGET ${trgt})
     fatal("cannot attach custom command to non-target: ${trgt}")
   endif()

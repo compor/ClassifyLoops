@@ -167,7 +167,7 @@ target_compile_definitions(${LIB_NAME} PUBLIC
 get_target_property(PROJECT_LIB_NAMES ${LIB_NAME} NAME)
 set(PROJECT_LIB_NAMES "${PROJECT_LIB_NAMES} ${LIB_NAME}.so lib${LIB_NAME}.so")
 
-AttachCompilationDBCommand(${LIB_NAME})
+attach_compilation_db_command(${LIB_NAME})
 
 #
 
