@@ -1,3 +1,6 @@
+# IDE files
+compile_commands.json
+
 # Compiled Object files
 *.slo
 *.lo
