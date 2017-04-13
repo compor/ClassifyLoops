@@ -41,13 +41,13 @@ include(CMakePackageConfigHelpers)
 
 # requirements
 
-if(${PROJECT_STANDALONE_BUILD})
+if(PROJECT_STANDALONE_BUILD)
   msg(STATUS "detecting LLVM dependency")
 
   # find_package in CONFIG mode will lookup and include LLVMConfig.cmake
   find_package(LLVM REQUIRED CONFIG)
 
-  if(${LLVM_FOUND})
+  if(LLVM_FOUND)
     msg(STATUS "found LLVM ${LLVM_PACKAGE_VERSION}")
     msg(STATUS "using LLVMConfig.cmake in: ${LLVM_DIR}")
   else()
@@ -58,7 +58,7 @@ endif()
 # These are required if functions are used:
 # - add_llvm_loadable_module()
 # - add_llvm_library
-if(${PROJECT_STANDALONE_BUILD})
+if(PROJECT_STANDALONE_BUILD)
   list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
 else()
   list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/share/llvm/cmake/")
@@ -86,7 +86,7 @@ msg(STATUS "detecting Doxygen dependency")
 
 find_package(Doxygen)
 
-if(${DOXYGEN_FOUND})
+if(DOXYGEN_FOUND)
   msg(STATUS "found Doxygen ${DOXYGEN_VERSION}")
 
   set(DOXYGEN_CFG_FILE_TEMPLATE
@@ -108,13 +108,13 @@ endif()
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
-if(NOT ${LLVM_ENABLE_RTTI})
+if(NOT LLVM_ENABLE_RTTI)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
 endif()
 
 msg(STATUS "RTTI support: ${LLVM_ENABLE_RTTI}")
 
-if(NOT ${LLVM_ENABLE_EH})
+if(NOT LLVM_ENABLE_EH)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-exceptions")
 endif()
 
@@ -135,7 +135,7 @@ set(LIB_NAME "LLVMSimplifyLoopExitsPass")
 set(LIB_SOURCES 
   "${CMAKE_CURRENT_SOURCE_DIR}/lib/SimplifyLoopExits.cpp")
 
-if(NOT ${USE_LLVM_INTERNAL_MODULE_FUNCTION})
+if(NOT USE_LLVM_INTERNAL_MODULE_FUNCTION)
   add_library(${LIB_NAME} MODULE ${LIB_SOURCES})
 else()
   # this follows the suggestion documented in
