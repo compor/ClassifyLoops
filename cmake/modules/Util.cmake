@@ -24,3 +24,17 @@ function(get_version version)
   set(${version} "${ver}" PARENT_SCOPE)
 endfunction()
 
+
+function(AttachCompilationDBCommand trgt)
+  if(NOT TARGET ${trgt})
+    fatal("cannot attach custom command to non-target: ${trgt}")
+  endif()
+
+  set(file "compile_commands.json")
+
+  add_custom_command(TARGET ${trgt} POST_BUILD
+    COMMAND ${CMAKE_COMMAND}
+    ARGS -E copy_if_different ${file} "${CMAKE_SOURCE_DIR}/${file}"
+    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+    VERBATIM)
+endfunction()
