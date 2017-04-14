@@ -1,1 +1,1 @@
-export PATH=/bulk/workbench/llvm/3.7.0/toolchain7/bin/:/home/vasich/bin:/usr/local/go/bin/:/usr/local/bin/:/home/vasich/bin:/usr/local/go/bin/:/usr/local/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/jvm/default-java
+export PATH=/bulk/workbench/llvm/3.7.0/toolchain7/bin/:${PATH}
