@@ -38,3 +38,33 @@ function(attach_compilation_db_command trgt)
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     VERBATIM)
 endfunction()
+
+
+function(set_policies)
+  math(EXPR is_even "${ARGC} % 2")
+  math(EXPR upper "${ARGC} - 1")
+
+  if(NOT is_even EQUAL 0)
+    fatal("set_policies requires an even number of arguments")
+  endif()
+
+  foreach(idx RANGE 0 ${upper} 2)
+    set(plc "${ARGV${idx}}")
+
+    math(EXPR nxt_idx "${idx} + 1")
+    set(newval "${ARGV${nxt_idx}}")
+
+    if(POLICY ${plc})
+      cmake_policy(GET ${plc} oldval)
+
+      if(NOT oldval EQUAL newval)
+        cmake_policy(SET "${plc}" "${newval}")
+
+        msg(STATUS "policy ${plc}: ${newval}")
+      endif()
+    else()
+      msg(WARNING "policy ${plc} is not defined")
+    endif()
+  endforeach()
+endfunction()
+

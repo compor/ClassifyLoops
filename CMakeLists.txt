@@ -22,7 +22,7 @@ set(PROJECT_NAME SimplifyLoopExitsOptPass)
 # part of LLVM or standalone
 set(PROJECT_STANDALONE_BUILD FALSE)
 
-if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
+if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
   project(${PROJECT_NAME} C CXX)
 
   set(PROJECT_STANDALONE_BUILD TRUE)
@@ -33,14 +33,8 @@ msg(STATUS "configuring as external LLVM project: ${PROJECT_STANDALONE_BUILD}")
 # CMP0056 is required for any libc++abi dependency of the try_compile() command
 # this bumps required version to 3.2
 # otherwise LD_LIBRARY_DIR needs to be set
-set(PROJECT_POLICIES CMP0056)
+set_policies(CMP0056 NEW)
 
-foreach(PROJECT_POLICY ${PROJECT_POLICIES})
-  if(POLICY ${PROJECT_POLICY})
-    cmake_policy(GET ${PROJECT_POLICY} POLICY_VALUE)
-    msg(STATUS "policy ${PROJECT_POLICY}: ${POLICY_VALUE}")
-  endif()
-endforeach()
 
 # requirements
 
