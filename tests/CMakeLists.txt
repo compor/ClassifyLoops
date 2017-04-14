@@ -1,5 +1,5 @@
 
-include(Python)
+include(FindPythonModule)
 
 find_python_module(lit REQUIRED)
 
