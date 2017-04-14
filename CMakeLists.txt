@@ -96,13 +96,12 @@ endif()
 #llvm_map_components_to_libnames(llvm_libs core support passes)
 #target_link_libraries(${LIB_NAME} ${llvm_libs})
 
-#
-
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
 target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PROJECT_VERSION})
 
 target_include_directories(${LIB_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
 target_include_directories(${LIB_NAME} PUBLIC "include")
+
 
 # TODO better way to deduce library name, especially when using llvm cmake
 # functions
@@ -126,7 +125,10 @@ write_basic_package_version_file(
 
 # installation
 
-install(TARGETS ${LIB_NAME} LIBRARY DESTINATION "lib")
-install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION "include")
-install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/share" DESTINATION .)
+# TODO see how in LLVM projects get installed
+if(PROJECT_STANDALONE_BUILD)
+  install(TARGETS ${LIB_NAME} LIBRARY DESTINATION "lib")
+  install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION "include")
+  install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/share" DESTINATION .)
+endif()
 
