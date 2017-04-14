@@ -28,7 +28,6 @@ endif()
 
 msg(STATUS "configuring as external LLVM project: ${PROJECT_STANDALONE_BUILD}")
 
-# TODO need to move this to top-level cmake list file
 # CMP0056 is required for any libc++abi dependency of the try_compile() command
 # this bumps required version to 3.2
 # otherwise LD_LIBRARY_DIR needs to be set
@@ -44,18 +43,16 @@ endforeach()
 # requirements
 
 if(PROJECT_STANDALONE_BUILD)
-  msg(STATUS "detecting LLVM dependency")
-
   # find_package in CONFIG mode will lookup and include LLVMConfig.cmake
   find_package(LLVM REQUIRED CONFIG)
 
-  if(LLVM_FOUND)
-    msg(STATUS "found LLVM ${LLVM_PACKAGE_VERSION}")
-    msg(STATUS "using LLVMConfig.cmake in: ${LLVM_DIR}")
-  else()
+  if(NOT LLVM_FOUND)
     msg(FATAL_ERROR "Could not find LLVM")
   endif()
 endif()
+
+msg(STATUS "found LLVM ${LLVM_PACKAGE_VERSION}")
+msg(STATUS "using LLVMConfig.cmake in: ${LLVM_DIR}")
 
 # These are required if functions are used:
 # - add_llvm_loadable_module()
@@ -77,8 +74,6 @@ add_subdirectory(docs)
 
 
 # project configuration
-
-#
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
@@ -103,11 +98,8 @@ if(${LLVM_PACKAGE_VERSION} VERSION_LESS "3.8.0")
   set(LLVM_RUNTIME_OUTPUT_INTDIR "${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INT_DIR}")
 endif()
 
-include_directories("${CMAKE_CURRENT_SOURCE_DIR}/include/")
-
 set(LIB_NAME "LLVMSimplifyLoopExitsPass")
-set(LIB_SOURCES 
-  "${CMAKE_CURRENT_SOURCE_DIR}/lib/SimplifyLoopExits.cpp")
+set(LIB_SOURCES "lib/SimplifyLoopExits.cpp")
 
 if(NOT USE_LLVM_INTERNAL_MODULE_FUNCTION)
   add_library(${LIB_NAME} MODULE ${LIB_SOURCES})
@@ -136,6 +128,8 @@ endif()
 target_compile_definitions(${LIB_NAME} PUBLIC 
   VERSION_STRING=${PROJECT_VERSION})
 
+target_include_directories(${LIB_NAME} "include")
+
 # TODO better way to deduce library name, especially when using llvm cmake
 # functions
 get_target_property(PROJECT_LIB_NAMES ${LIB_NAME} NAME)
@@ -145,7 +139,8 @@ attach_compilation_db_command(${LIB_NAME})
 
 #
 
-configure_file(${PROJECT_CMAKE_MODULE_DIR}/SimplifyLoopExitsConfig.cmake.in
+configure_file(
+  ${PROJECT_CMAKE_MODULE_DIR}/SimplifyLoopExitsConfig.cmake.in
   "share/${PROJECT_NAME}/cmake/${PROJECT_NAME}Config.cmake"
   @ONLY)
 

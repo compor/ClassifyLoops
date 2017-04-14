@@ -7,8 +7,6 @@ if(NOT DOXYGEN_FOUND)
   return()
 endif()
 
-#message(STATUS "found Doxygen ${DOXYGEN_VERSION}")
-
 set(DOXYGEN_CFG_FILE_TEMPLATE "doxygen.cfg.in")
 set(DOXYGEN_CFG_FILE "${CMAKE_CURRENT_BINARY_DIR}/doxygen.cfg")
 
