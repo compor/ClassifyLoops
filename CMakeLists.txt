@@ -14,6 +14,7 @@ include(CMakePackageConfigHelpers)
 include(Util)
 include(HandleLLVMDependency)
 
+option(PRJ_USE_LLVM_INTERNAL_MODULE TRUE)
 
 get_version(PRJ_VERSION)
 
@@ -68,7 +69,7 @@ msg(STATUS "EH support: ${LLVM_ENABLE_EH}")
 set(LIB_NAME "LLVMSimplifyLoopExitsPass")
 set(LIB_SOURCES "lib/SimplifyLoopExits.cpp")
 
-if(NOT USE_LLVM_INTERNAL_MODULE_FUNCTION)
+if(NOT PRJ_USE_LLVM_INTERNAL_MODULE)
   add_library(${LIB_NAME} MODULE ${LIB_SOURCES})
 else()
   # this follows the suggestion documented in
