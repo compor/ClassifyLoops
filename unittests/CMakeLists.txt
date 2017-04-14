@@ -3,8 +3,9 @@
 find_package(GTest)
 
 if(NOT GTEST_FOUND)
-  message(WARNING "Could not find GoogleTest. Skipping unit test configuration")
+  message(WARNING "Could not find GTest; skipping unit tests")
 
   return()
 endif()
+
 
