@@ -11,7 +11,7 @@ endfunction()
 
 
 macro(msg mode)
-  message(${mode} "${PROJECT_NAME} ${ARGN}")
+  message(${mode} "${PRJ_NAME} ${ARGN}")
 endmacro()
 
 

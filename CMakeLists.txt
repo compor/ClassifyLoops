@@ -7,28 +7,29 @@ cmake_minimum_required(VERSION 3.2.0)
 enable_testing()
 
 # add project cmake module path
-set(PROJECT_CMAKE_MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
-list(APPEND CMAKE_MODULE_PATH ${PROJECT_CMAKE_MODULE_DIR})
+set(PRJ_CMAKE_MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
+list(APPEND CMAKE_MODULE_PATH ${PRJ_CMAKE_MODULE_DIR})
 
 include(CMakePackageConfigHelpers)
 include(Util)
 include(HandleLLVMDependency)
 
 
-get_version(PROJECT_VERSION)
+get_version(PRJ_VERSION)
 
-set(PROJECT_NAME SimplifyLoopExitsOptPass)
+set(PRJ_NAME SimplifyLoopExitsOptPass)
 
 # part of LLVM or standalone
-set(PROJECT_STANDALONE_BUILD FALSE)
+set(PRJ_STANDALONE_BUILD FALSE)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-  project(${PROJECT_NAME} C CXX)
+  project(${PRJ_NAME} C CXX)
 
-  set(PROJECT_STANDALONE_BUILD TRUE)
+  set(PRJ_STANDALONE_BUILD TRUE)
+
+  msg(STATUS "configuring as external LLVM project")
 endif()
 
-msg(STATUS "configuring as external LLVM project: ${PROJECT_STANDALONE_BUILD}")
 
 # CMP0056 is required for any libc++abi dependency of the try_compile() command
 # this bumps required version to 3.2
@@ -38,7 +39,7 @@ set_policies(CMP0056 NEW)
 
 # requirements
 
-handle_llvm_dependency(${PROJECT_STANDALONE_BUILD})
+handle_llvm_dependency(${PRJ_STANDALONE_BUILD})
 
 #
 
@@ -91,7 +92,7 @@ endif()
 #target_link_libraries(${LIB_NAME} ${llvm_libs})
 
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
-target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PROJECT_VERSION})
+target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})
 
 target_include_directories(${LIB_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
 target_include_directories(${LIB_NAME} PUBLIC "include")
@@ -99,28 +100,28 @@ target_include_directories(${LIB_NAME} PUBLIC "include")
 
 # TODO better way to deduce library name, especially when using llvm cmake
 # functions
-get_target_property(PROJECT_LIB_NAMES ${LIB_NAME} NAME)
-set(PROJECT_LIB_NAMES "${PROJECT_LIB_NAMES} ${LIB_NAME}.so lib${LIB_NAME}.so")
+get_target_property(PRJ_LIB_NAMES ${LIB_NAME} NAME)
+set(PRJ_LIB_NAMES "${PRJ_LIB_NAMES} ${LIB_NAME}.so lib${LIB_NAME}.so")
 
 attach_compilation_db_command(${LIB_NAME})
 
 #
 
 configure_file(
-  ${PROJECT_CMAKE_MODULE_DIR}/SimplifyLoopExitsConfig.cmake.in
-  "share/${PROJECT_NAME}/cmake/${PROJECT_NAME}Config.cmake"
+  ${PRJ_CMAKE_MODULE_DIR}/SimplifyLoopExitsConfig.cmake.in
+  "share/${PRJ_NAME}/cmake/${PRJ_NAME}Config.cmake"
   @ONLY)
 
 # TODO parse project version from vcs
 write_basic_package_version_file(
-  "share/${PROJECT_NAME}/cmake/${PROJECT_NAME}ConfigVersion.cmake"
+  "share/${PRJ_NAME}/cmake/${PRJ_NAME}ConfigVersion.cmake"
   VERSION "0.0.0"
   COMPATIBILITY SameMajorVersion)
 
 # installation
 
 # TODO see how in LLVM projects get installed
-if(PROJECT_STANDALONE_BUILD)
+if(PRJ_STANDALONE_BUILD)
   install(TARGETS ${LIB_NAME} LIBRARY DESTINATION "lib")
   install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/" DESTINATION "include")
   install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/share" DESTINATION .)
