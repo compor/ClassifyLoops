@@ -128,7 +128,7 @@ endif()
 target_compile_definitions(${LIB_NAME} PUBLIC 
   VERSION_STRING=${PROJECT_VERSION})
 
-target_include_directories(${LIB_NAME} "include")
+target_include_directories(${LIB_NAME} PUBLIC "include")
 
 # TODO better way to deduce library name, especially when using llvm cmake
 # functions
