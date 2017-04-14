@@ -2,7 +2,7 @@
 find_package(Doxygen)
 
 if(NOT DOXYGEN_FOUND)
-  message(STATUS "Could not find Doxygen.")
+  message(STATUS "Could not find Doxygen")
 
   return()
 endif()
