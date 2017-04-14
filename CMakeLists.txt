@@ -12,6 +12,8 @@ list(APPEND CMAKE_MODULE_PATH ${PROJECT_CMAKE_MODULE_DIR})
 
 include(CMakePackageConfigHelpers)
 include(Util)
+include(HandleLLVMDependency)
+
 
 get_version(PROJECT_VERSION)
 
@@ -42,29 +44,7 @@ endforeach()
 
 # requirements
 
-if(PROJECT_STANDALONE_BUILD)
-  # find_package in CONFIG mode will lookup and include LLVMConfig.cmake
-  find_package(LLVM REQUIRED CONFIG)
-
-  if(NOT LLVM_FOUND)
-    msg(FATAL_ERROR "Could not find LLVM")
-  endif()
-endif()
-
-msg(STATUS "found LLVM ${LLVM_PACKAGE_VERSION}")
-msg(STATUS "using LLVMConfig.cmake in: ${LLVM_DIR}")
-
-# These are required if functions are used:
-# - add_llvm_loadable_module()
-# - add_llvm_library
-if(PROJECT_STANDALONE_BUILD)
-  list(APPEND CMAKE_MODULE_PATH "${LLVM_CMAKE_DIR}")
-else()
-  list(APPEND CMAKE_MODULE_PATH "${CMAKE_BINARY_DIR}/share/llvm/cmake/")
-endif()
-
-include(AddLLVM)
-include(HandleLLVMOptions)
+handle_llvm_dependency(${PROJECT_STANDALONE_BUILD})
 
 #
 
@@ -90,14 +70,6 @@ endif()
 msg(STATUS "EH support: ${LLVM_ENABLE_EH}")
 
 
-add_definitions(${LLVM_DEFINITIONS})
-include_directories(${LLVM_INCLUDE_DIRS})
-
-if(${LLVM_PACKAGE_VERSION} VERSION_LESS "3.8.0")
-  set(LLVM_RUNTIME_OUTPUT_INTDIR "${CMAKE_BINARY_DIR}/bin/${CMAKE_CFG_INT_DIR}")
-  set(LLVM_RUNTIME_OUTPUT_INTDIR "${CMAKE_BINARY_DIR}/lib/${CMAKE_CFG_INT_DIR}")
-endif()
-
 set(LIB_NAME "LLVMSimplifyLoopExitsPass")
 set(LIB_SOURCES "lib/SimplifyLoopExits.cpp")
 
@@ -120,14 +92,16 @@ endif()
 # via opt or clang which already have those libs in their dependencies
 # comment out the following two statements
 # to test against static lib LLVM build
+
 #llvm_map_components_to_libnames(llvm_libs core support passes)
 #target_link_libraries(${LIB_NAME} ${llvm_libs})
 
 #
 
-target_compile_definitions(${LIB_NAME} PUBLIC 
-  VERSION_STRING=${PROJECT_VERSION})
+target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
+target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PROJECT_VERSION})
 
+target_include_directories(${LIB_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
 target_include_directories(${LIB_NAME} PUBLIC "include")
 
 # TODO better way to deduce library name, especially when using llvm cmake
