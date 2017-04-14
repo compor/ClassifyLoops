@@ -4,21 +4,25 @@
 
 cmake_minimum_required(VERSION 3.2.0)
 
+enable_testing()
+
 # add project cmake module path
 set(PROJECT_CMAKE_MODULE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 list(APPEND CMAKE_MODULE_PATH ${PROJECT_CMAKE_MODULE_DIR})
 
+include(CMakePackageConfigHelpers)
 include(Util)
 
 get_version(PROJECT_VERSION)
 
 set(PROJECT_NAME SimplifyLoopExitsOptPass)
 
-# Standalone build or part of LLVM?
+# part of LLVM or standalone
 set(PROJECT_STANDALONE_BUILD FALSE)
 
 if("${CMAKE_SOURCE_DIR}" STREQUAL "${CMAKE_CURRENT_SOURCE_DIR}")
   project(${PROJECT_NAME} C CXX)
+
   set(PROJECT_STANDALONE_BUILD TRUE)
 endif()
 
@@ -36,8 +40,6 @@ foreach(PROJECT_POLICY ${PROJECT_POLICIES})
     msg(STATUS "policy ${PROJECT_POLICY}: ${POLICY_VALUE}")
   endif()
 endforeach()
-
-include(CMakePackageConfigHelpers)
 
 # requirements
 
@@ -69,38 +71,10 @@ include(HandleLLVMOptions)
 
 #
 
-msg(STATUS "detecting Python and LLVM lit/FileCheck dependency")
+add_subdirectory(unittests)
+add_subdirectory(tests)
+add_subdirectory(docs)
 
-include(Python)
-
-find_python_module(lit REQUIRED)
-
-#if(NOT EXISTS ${LLVM_TOOLS_BINARY_DIR}/FileCheck)
-  #msg(FATAL_ERROR "Could not find FileCheck. Please configure LLVM properly.")
-#endif()
-
-
-#
-
-msg(STATUS "detecting Doxygen dependency")
-
-find_package(Doxygen)
-
-if(DOXYGEN_FOUND)
-  msg(STATUS "found Doxygen ${DOXYGEN_VERSION}")
-
-  set(DOXYGEN_CFG_FILE_TEMPLATE
-    "${CMAKE_CURRENT_SOURCE_DIR}/docs/doxygen.cfg.in")
-  set(DOXYGEN_CFG_FILE "${CMAKE_CURRENT_BINARY_DIR}/docs/doxygen.cfg")
-
-  configure_file(${DOXYGEN_CFG_FILE_TEMPLATE} ${DOXYGEN_CFG_FILE} @ONLY)
-
-  add_custom_target(doc ${DOXYGEN_EXECUTABLE} ${DOXYGEN_CFG_FILE}
-    WORKING_DIR ${CMAKE_CURRENT_BINARY_DIR}
-    COMMENT "generating documentation" VERBATIM)
-else()
-  msg(STATUS "could not find Doxygen")
-endif()
 
 # project configuration
 
