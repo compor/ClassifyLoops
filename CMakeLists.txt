@@ -85,15 +85,13 @@ else()
   add_llvm_loadable_module(${LIB_NAME} ${LIB_SOURCES})
 endif()
 
-# according to
-# http://llvm.org/docs/CMake.html
+# according to http://llvm.org/docs/CMake.html
 # we do not need the below library dependencies since the plugin will be loaded
 # via opt or clang which already have those libs in their dependencies
-# comment out the following two statements
-# to test against static lib LLVM build
+# comment out the following two statements to test against static lib LLVM build
 
 #llvm_map_components_to_libnames(llvm_libs core support passes)
-#target_link_libraries(${LIB_NAME} ${llvm_libs})
+#target_link_libraries(${LIB_NAME} PUBLIC ${llvm_libs})
 
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
 target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})
