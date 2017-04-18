@@ -21,10 +21,14 @@ set(TEST_SOURCES "${PRJ_TEST_NAME}.cpp")
 
 add_executable(${PRJ_TEST_NAME} ${TEST_SOURCES})
 
-target_sources(${PRJ_TEST_NAME} PUBLIC ${TEST_SOURCES})
+target_compile_definitions(${PRJ_TEST_NAME} PUBLIC ${LLVM_DEFINITIONS})
 
 target_include_directories(${PRJ_TEST_NAME} PUBLIC ${GTEST_INCLUDE_DIRS})
+target_include_directories(${PRJ_TEST_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
 
 target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${GTEST_BOTH_LIBRARIES})  
 target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})  
+
+llvm_map_components_to_libnames(llvm_libs core support asmparser)
+target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${llvm_libs})
 
