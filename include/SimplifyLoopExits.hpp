@@ -5,8 +5,8 @@
 #include "llvm/Pass.h"
 // using llvm::FunctionPass
 
-#ifndef PRJ_VERSION
-#define PRJ_VERSION "development"
+#ifndef VERSION_STRING
+#define VERSION_STRING ""
 #endif
 
 namespace llvm {

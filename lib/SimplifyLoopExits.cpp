@@ -41,9 +41,15 @@
 
 // plugin registration for opt
 
+#define STRINGIFY_UTIL(x) #x
+#define STRINGIFY(x) STRINGIFY_UTIL(x)
+
+#define PRJ_CMDLINE_STRING                                                     \
+  "simplify loop exits (version: " STRINGIFY(VERSION_STRING) ")"
+
 char SimplifyLoopExits::ID = 0;
 static llvm::RegisterPass<SimplifyLoopExits>
-    X("simplifyloopexits", "SimplifyLoopExits pass", false, false);
+    X("simplifyloopexits", PRJ_CMDLINE_STRING, false, false);
 
 // plugin registration for clang
 
