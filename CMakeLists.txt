@@ -42,12 +42,6 @@ set_policies(CMP0056 NEW)
 
 handle_llvm_dependency(${PRJ_STANDALONE_BUILD})
 
-#
-
-add_subdirectory(unittests)
-add_subdirectory(tests)
-add_subdirectory(docs)
-
 
 # project configuration
 
@@ -65,6 +59,15 @@ endif()
 
 msg(STATUS "EH support: ${LLVM_ENABLE_EH}")
 
+
+#
+
+add_subdirectory(unittests)
+add_subdirectory(tests)
+add_subdirectory(docs)
+
+
+#
 
 set(LIB_NAME "LLVMSimplifyLoopExitsPass")
 set(LIB_SOURCES "lib/SimplifyLoopExits.cpp")
@@ -105,6 +108,7 @@ get_target_property(PRJ_LIB_NAMES ${LIB_NAME} NAME)
 set(PRJ_LIB_NAMES "${PRJ_LIB_NAMES} ${LIB_NAME}.so lib${LIB_NAME}.so")
 
 attach_compilation_db_command(${LIB_NAME})
+
 
 #
 
