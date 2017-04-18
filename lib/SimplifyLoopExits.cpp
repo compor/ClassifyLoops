@@ -29,6 +29,10 @@
 #include "llvm/Support/raw_ostream.h"
 // using llvm::raw_ostream
 
+#include "llvm/Support/CommandLine.h"
+// using llvm::cl::opt
+// using llvm::cl::desc
+
 #define DEBUG_TYPE "SimplifyLoopExits"
 
 #include "llvm/Support/Debug.h"
@@ -39,7 +43,7 @@
 
 char SimplifyLoopExits::ID = 0;
 static llvm::RegisterPass<SimplifyLoopExits>
-    X("simplifyloopexits-opt-pass", "SimplifyLoopExits pass", false, false);
+    X("simplifyloopexits", "SimplifyLoopExits pass", false, false);
 
 // plugin registration for clang
 
