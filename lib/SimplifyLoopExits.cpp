@@ -75,36 +75,6 @@ static llvm::RegisterStandardPasses
 namespace {
 
 bool SimplifyLoopExits::runOnFunction(llvm::Function &f) {
-  DEBUG(llvm::dbgs() << "skeleton pass : ");
-  DEBUG(llvm::dbgs() << " function name : ");
-  DEBUG(llvm::dbgs().write_escaped(f.getName()));
-  auto ret_type = f.getReturnType();
-  DEBUG(llvm::dbgs() << "\twith ret type : ");
-  DEBUG(ret_type->print(llvm::dbgs()));
-
-  DEBUG(llvm::dbgs() << "\n---\n");
-
-  for (auto bi = f.begin(); f.end() != bi; ++bi)
-    for (auto ii = bi->begin(); bi->end() != ii; ++ii) {
-      DEBUG(llvm::dbgs() << "users of : " << *ii << "\n");
-      for (auto user : ii->users()) {
-        // TODO what about other users?
-        if (auto user_inst = llvm::dyn_cast<llvm::Instruction>(user))
-          DEBUG(llvm::dbgs() << "\t" << *user_inst << "\n\n");
-      }
-
-      DEBUG(llvm::dbgs() << "\twhich uses:\n");
-
-      for (auto &use : ii->operands()) {
-        auto v = use.get();
-        DEBUG(llvm::dbgs() << "\t");
-        DEBUG(v->print(llvm::dbgs()));
-        DEBUG(llvm::dbgs() << "\n");
-      }
-
-      DEBUG(llvm::dbgs() << "\n---\n");
-    }
-
   return false;
 }
 
