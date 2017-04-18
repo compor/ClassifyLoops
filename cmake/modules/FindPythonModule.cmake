@@ -17,7 +17,7 @@ function(find_python_module name)
   if(PYTHONINTERP_FOUND)
     execute_process(COMMAND
       "${PYTHON_EXECUTABLE} -c ${prg_str}"
-      RESULT_VARIABLE status
+      RESULT_VARIABLE result
       OUTPUT_VARIABLE location
       ERROR_QUIET
       OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -25,7 +25,7 @@ function(find_python_module name)
     message(WARNING "Could not find Python interpreter")
   endif()
 
-  if(NOT status)
+  if(NOT result)
     set(${module} ${location}
       CACHE STRING "Location of Python module: ${name}")
   endif()
