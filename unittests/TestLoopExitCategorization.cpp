@@ -65,6 +65,12 @@ protected:
     return;
   }
 
+  void RunPass() {
+    const auto func = m_Module->getFunction("foo");
+    m_FPM.run(*func);
+    m_LI = &(m_LP->getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo());
+  }
+
   std::unique_ptr<llvm::Module> m_Module;
   llvm::LoopInfoWrapperPass *m_LP;
   llvm::LoopInfo *m_LI;
@@ -85,6 +91,8 @@ TEST_F(LoopExitClassifierTest, Foo) {
       "  %A = bitcast i8 undef to i8\n"
       "  ret void\n"
       "}\n");
+
+  RunPass();
 }
 
 
