@@ -37,41 +37,42 @@
 namespace {
 
 class LoopExitClassifierTest : public testing::Test {
-public:
-  LoopExitClassifierTest()
-      : m_FPM{nullptr}, m_LP{new llvm::LoopInfoWrapperPass()} {}
-
 protected:
+  std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
+  llvm::LoopInfoWrapperPass *m_LP;
+
+  std::unique_ptr<llvm::Module> m_Module;
+  llvm::Function *m_Func;
+
   void ParseAssembly(const char *Assembly) {
-    llvm::SMDiagnostic Error;
+    llvm::SMDiagnostic err;
+
     m_Module =
-        llvm::parseAssemblyString(Assembly, Error, llvm::getGlobalContext());
+        llvm::parseAssemblyString(Assembly, err, llvm::getGlobalContext());
 
     std::string errMsg;
     llvm::raw_string_ostream os(errMsg);
-    Error.print("", os);
+    err.print("", os);
 
     if (!m_Module)
       llvm::report_fatal_error(os.str().c_str());
 
-    llvm::Function *F = m_Module->getFunction("foo");
-    if (!F)
+    m_Func = m_Module->getFunction("foo");
+    if (!m_Func)
       llvm::report_fatal_error("Test must have a function named @foo");
+
+    m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
+
+    m_FPM->run(*m_Func);
+    auto &li = m_LP->getLoopInfo();
 
     return;
   }
 
-  void RunPass() {
-    m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
-    const auto func = m_Module->getFunction("foo");
-
-    m_FPM->run(*func);
-    auto &li = m_LP->getLoopInfo();
-  }
-
-  std::unique_ptr<llvm::Module> m_Module;
-  std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
-  llvm::LoopInfoWrapperPass *m_LP;
+public:
+  LoopExitClassifierTest()
+      : m_FPM{nullptr}, m_LP{new llvm::LoopInfoWrapperPass()},
+        m_Module{nullptr}, m_Func{nullptr} {}
 };
 
 } // namespace unnamed end
@@ -86,8 +87,6 @@ TEST_F(LoopExitClassifierTest, Foo) {
                 "  %A = bitcast i8 undef to i8\n"
                 "  ret void\n"
                 "}\n");
-
-  RunPass();
 }
 
 int main(int argc, char *argv[]) {
