@@ -29,6 +29,8 @@ target_include_directories(${PRJ_TEST_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
 target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${GTEST_BOTH_LIBRARIES})  
 target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${CMAKE_THREAD_LIBS_INIT})  
 
-llvm_map_components_to_libnames(llvm_libs core support asmparser)
+llvm_map_components_to_libnames(llvm_libs 
+  core support asmparser analysis passes)
+
 target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${llvm_libs})
 
