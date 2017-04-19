@@ -78,7 +78,7 @@ public:
 
 } // namespace unnamed end
 
-TEST_F(TestLoopExitClassifier, Foo) {
+TEST_F(TestLoopExitClassifier, DISABLED_Dummy) {
   ParseAssembly("define void @foo() {\n"
                 "entry:\n"
                 "  bitcast i8 undef to i8\n"
