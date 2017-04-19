@@ -38,18 +38,14 @@ namespace {
 
 class LoopExitClassifierTest : public testing::Test {
 public:
-  LoopExitClassifierTest() : m_FPM(nullptr) {
-    llvm::initializeLoopInfoWrapperPassPass(
-        *llvm::PassRegistry::getPassRegistry());
-
-    m_LP = new llvm::LoopInfoWrapperPass();
-    m_FPM.add(m_LP);
-  }
+  LoopExitClassifierTest()
+      : m_FPM{nullptr}, m_LP{new llvm::LoopInfoWrapperPass()} {}
 
 protected:
   void ParseAssembly(const char *Assembly) {
     llvm::SMDiagnostic Error;
-    m_Module = llvm::parseAssemblyString(Assembly, Error, llvm::getGlobalContext());
+    m_Module =
+        llvm::parseAssemblyString(Assembly, Error, llvm::getGlobalContext());
 
     std::string errMsg;
     llvm::raw_string_ostream os(errMsg);
@@ -66,35 +62,33 @@ protected:
   }
 
   void RunPass() {
+    m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
     const auto func = m_Module->getFunction("foo");
-    m_FPM.run(*func);
-    m_LI = &(m_LP->getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo());
+
+    m_FPM->run(*func);
+    auto &li = m_LP->getLoopInfo();
   }
 
   std::unique_ptr<llvm::Module> m_Module;
+  std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
   llvm::LoopInfoWrapperPass *m_LP;
-  llvm::LoopInfo *m_LI;
-  llvm::legacy::FunctionPassManager m_FPM;
 };
 
 } // namespace unnamed end
 
-
 TEST_F(LoopExitClassifierTest, Foo) {
-  ParseAssembly(
-      "define void @foo() {\n"
-      "entry:\n"
-      "  bitcast i8 undef to i8\n"
-      "  %B = bitcast i8 undef to i8\n"
-      "  bitcast i8 undef to i8\n"
-      "  bitcast i8 undef to i8\n"
-      "  %A = bitcast i8 undef to i8\n"
-      "  ret void\n"
-      "}\n");
+  ParseAssembly("define void @foo() {\n"
+                "entry:\n"
+                "  bitcast i8 undef to i8\n"
+                "  %B = bitcast i8 undef to i8\n"
+                "  bitcast i8 undef to i8\n"
+                "  bitcast i8 undef to i8\n"
+                "  %A = bitcast i8 undef to i8\n"
+                "  ret void\n"
+                "}\n");
 
   RunPass();
 }
-
 
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
