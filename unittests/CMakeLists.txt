@@ -34,3 +34,17 @@ llvm_map_components_to_libnames(llvm_libs
 
 target_link_libraries(${PRJ_TEST_NAME} PUBLIC ${llvm_libs})
 
+# setup dependency between unit test targets and their production code
+add_dependencies(${PRJ_TEST_NAME} ${LIB_NAME})
+
+# exclude unit test targets from main build
+set_target_properties(${PRJ_TEST_NAME} PROPERTIES
+  EXCLUDE_FROM_ALL TRUE)
+
+
+# aggregate unit test targets under a pseudo-target
+add_custom_target(unittests)
+
+add_dependencies(unittests ${PRJ_TEST_NAME})
+
+

@@ -62,13 +62,6 @@ msg(STATUS "EH support: ${LLVM_ENABLE_EH}")
 
 #
 
-add_subdirectory(unittests)
-add_subdirectory(tests)
-add_subdirectory(docs)
-
-
-#
-
 set(LIB_NAME "LLVMSimplifyLoopExitsPass")
 set(LIB_SOURCES "lib/SimplifyLoopExits.cpp")
 
@@ -98,6 +91,12 @@ target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})
 
 target_include_directories(${LIB_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
 target_include_directories(${LIB_NAME} PUBLIC "include")
+
+#
+
+add_subdirectory(unittests)
+add_subdirectory(tests)
+add_subdirectory(docs)
 
 
 # TODO better way to deduce library name, especially when using llvm cmake
