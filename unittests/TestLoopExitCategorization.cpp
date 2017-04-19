@@ -42,8 +42,8 @@ public:
     llvm::initializeLoopInfoWrapperPassPass(
         *llvm::PassRegistry::getPassRegistry());
 
-    m_LP = std::make_unique<llvm::LoopInfoWrapperPass>();
-    m_FPM.add(m_LP.get());
+    m_LP = new llvm::LoopInfoWrapperPass();
+    m_FPM.add(m_LP);
   }
 
 protected:
@@ -66,7 +66,8 @@ protected:
   }
 
   std::unique_ptr<llvm::Module> m_Module;
-  std::unique_ptr<llvm::LoopInfoWrapperPass> m_LP;
+  llvm::LoopInfoWrapperPass *m_LP;
+  llvm::LoopInfo *m_LI;
   llvm::legacy::FunctionPassManager m_FPM;
 };
 
