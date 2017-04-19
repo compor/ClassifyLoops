@@ -36,8 +36,8 @@
 
 namespace {
 
-class LoopExitClassifierTest : public testing::Test {
-protected:
+class TestLoopExitClassifier : public testing::Test {
+public:
   std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
   llvm::LoopInfoWrapperPass *m_LP;
 
@@ -68,20 +68,17 @@ protected:
     m_FPM->run(*m_Func);
     m_LI = &m_LP->getLoopInfo();
 
-    llvm::outs() << m_LI->empty() << "\n";
-
     return;
   }
 
-public:
-  LoopExitClassifierTest()
+  TestLoopExitClassifier()
       : m_FPM{nullptr}, m_LP{new llvm::LoopInfoWrapperPass()},
         m_Module{nullptr}, m_Func{nullptr} {}
 };
 
 } // namespace unnamed end
 
-TEST_F(LoopExitClassifierTest, Foo) {
+TEST_F(TestLoopExitClassifier, Foo) {
   ParseAssembly("define void @foo() {\n"
                 "entry:\n"
                 "  bitcast i8 undef to i8\n"
@@ -91,6 +88,8 @@ TEST_F(LoopExitClassifierTest, Foo) {
                 "  %A = bitcast i8 undef to i8\n"
                 "  ret void\n"
                 "}\n");
+
+  EXPECT_EQ(m_LI->empty(), true);
 }
 
 int main(int argc, char *argv[]) {
