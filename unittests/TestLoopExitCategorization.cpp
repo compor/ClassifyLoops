@@ -73,6 +73,21 @@ protected:
 
 } // namespace unnamed end
 
+
+TEST_F(LoopExitClassifierTest, Foo) {
+  ParseAssembly(
+      "define void @foo() {\n"
+      "entry:\n"
+      "  bitcast i8 undef to i8\n"
+      "  %B = bitcast i8 undef to i8\n"
+      "  bitcast i8 undef to i8\n"
+      "  bitcast i8 undef to i8\n"
+      "  %A = bitcast i8 undef to i8\n"
+      "  ret void\n"
+      "}\n");
+}
+
+
 int main(int argc, char *argv[]) {
   ::testing::InitGoogleTest(&argc, argv);
 
