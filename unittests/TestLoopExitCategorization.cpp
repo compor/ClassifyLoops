@@ -44,6 +44,8 @@ protected:
   std::unique_ptr<llvm::Module> m_Module;
   llvm::Function *m_Func;
 
+  llvm::LoopInfo *m_LI;
+
   void ParseAssembly(const char *Assembly) {
     llvm::SMDiagnostic err;
 
@@ -64,7 +66,9 @@ protected:
     m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
 
     m_FPM->run(*m_Func);
-    auto &li = m_LP->getLoopInfo();
+    m_LI = &m_LP->getLoopInfo();
+
+    llvm::outs() << m_LI->empty() << "\n";
 
     return;
   }
