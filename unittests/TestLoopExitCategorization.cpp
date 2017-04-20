@@ -13,6 +13,7 @@
 
 #include "llvm/Pass.h"
 // using llvm::Pass
+// using llvm::PassInfo
 
 #include "llvm/Analysis/LoopInfo.h"
 // using llvm::LoopInfoWrapperPass
@@ -32,16 +33,50 @@
 
 #include "gtest/gtest.h"
 
+
+
 namespace {
+
+struct UtilityPass : public llvm::FunctionPass {
+  static char ID;
+  llvm::LoopInfo *m_LI;
+
+
+
+  UtilityPass() : FunctionPass(ID) {}
+
+  bool runOnFunction(llvm::Function &F) override {
+    m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+    // m_LI->print(llvm::outs());
+
+    return false;
+  }
+
+  void getAnalysisUsage(llvm::AnalysisUsage &AU) const override {
+    AU.setPreservesAll();
+    AU.addRequired<llvm::LoopInfoWrapperPass>();
+  }
+
+  static int initialize() {
+    llvm::PassInfo *PI =
+        new llvm::PassInfo("Utility pass", "", &ID, nullptr, true, true);
+
+    auto *registry = llvm::PassRegistry::getPassRegistry();
+    registry->registerPass(*PI, false);
+
+    llvm::initializeLoopInfoWrapperPassPass(*registry);
+
+    return 0;
+  }
+};
+
+char UtilityPass::ID = 0;
 
 class TestLoopExitClassifier : public testing::Test {
 public:
-  std::unique_ptr<llvm::legacy::FunctionPassManager> m_FPM;
-  llvm::LoopInfoWrapperPass *m_LP;
-
+  std::unique_ptr<llvm::legacy::PassManager> m_PM;
   std::unique_ptr<llvm::Module> m_Module;
   llvm::Function *m_Func;
-
   llvm::LoopInfo *m_LI;
 
   void ParseAssembly(const char *Assembly) {
@@ -61,25 +96,31 @@ public:
     if (!m_Func)
       llvm::report_fatal_error("Test must have a function named @foo");
 
-    m_FPM = std::make_unique<llvm::legacy::FunctionPassManager>(m_Module.get());
+    m_PM = std::make_unique<llvm::legacy::PassManager>();
 
-    m_FPM->run(*m_Func);
-    m_LI = &m_LP->getLoopInfo();
+    static int init = UtilityPass::initialize();
+    (void)init;
+
+    auto *P = new UtilityPass();
+    m_PM->add(P);
+    m_PM->run(*m_Module);
 
     return;
   }
 
   TestLoopExitClassifier()
-      : m_FPM{nullptr}, m_LP{new llvm::LoopInfoWrapperPass()},
-        m_Module{nullptr}, m_Func{nullptr} {}
+      : m_PM{nullptr}, m_LI{nullptr}, m_Module{nullptr}, m_Func{nullptr} {}
 };
 
 } // namespace unnamed end
 
 namespace LoopExitClassifier {
-  long int getLoopExitNumber(const llvm::LoopInfo &LI) {
-    return LI.empty() ? 0 : 1;
-  }
+long int getLoopExitNumber(const llvm::Loop &CurLoop) {
+  llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
+  CurLoop.getExitingBlocks(exiting);
+
+  return -1;
+}
 }
 
 TEST_F(TestLoopExitClassifier, DISABLED_Dummy) {
@@ -93,7 +134,7 @@ TEST_F(TestLoopExitClassifier, DISABLED_Dummy) {
                 "  ret void\n"
                 "}\n");
 
-  EXPECT_EQ(m_LI->empty(), true);
+  EXPECT_EQ(true, true);
 }
 
 TEST_F(TestLoopExitClassifier, ReturnsZeroLoopExitsWhenNoLoops) {

@@ -17,7 +17,7 @@ find_package(Threads REQUIRED)
 # aggregate unit test targets under a pseudo-target
 add_custom_target(unittests)
 
-set(PRJ_TEST_NAMES TestLoopExitCategorization CFGTest)
+set(PRJ_TEST_NAMES TestLoopExitCategorization)
 
 foreach(prj_test_name ${PRJ_TEST_NAMES})
   set(TEST_SOURCES "${prj_test_name}.cpp")
