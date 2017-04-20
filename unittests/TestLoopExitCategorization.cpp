@@ -11,14 +11,12 @@
 #include "llvm/IR/LegacyPassManager.h"
 // using llvm::legacy::PassMananger
 
-#include "llvm/PassRegistry.h"
-// using llvm::PassRegistry
-
 #include "llvm/Pass.h"
 // using llvm::Pass
 
 #include "llvm/Analysis/LoopInfo.h"
 // using llvm::LoopInfoWrapperPass
+// using llvm::LoopInfo
 
 #include "llvm/Support/SourceMgr.h"
 // using llvm::SMDiagnostic
