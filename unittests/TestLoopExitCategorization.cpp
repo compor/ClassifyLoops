@@ -76,6 +76,12 @@ public:
 
 } // namespace unnamed end
 
+namespace LoopExitClassifier {
+  long int getLoopExitNumber(const llvm::LoopInfo &LI) {
+    return LI.empty() ? 0 : 1;
+  }
+}
+
 TEST_F(TestLoopExitClassifier, DISABLED_Dummy) {
   ParseAssembly("define void @foo() {\n"
                 "entry:\n"
@@ -88,6 +94,20 @@ TEST_F(TestLoopExitClassifier, DISABLED_Dummy) {
                 "}\n");
 
   EXPECT_EQ(m_LI->empty(), true);
+}
+
+TEST_F(TestLoopExitClassifier, ReturnsZeroLoopExitsWhenNoLoops) {
+  ParseAssembly("define void @foo() {\n"
+                "entry:\n"
+                "  bitcast i8 undef to i8\n"
+                "  %B = bitcast i8 undef to i8\n"
+                "  bitcast i8 undef to i8\n"
+                "  bitcast i8 undef to i8\n"
+                "  %A = bitcast i8 undef to i8\n"
+                "  ret void\n"
+                "}\n");
+
+  EXPECT_EQ(LoopExitClassifier::getLoopExitNumber(*m_LI), 0);
 }
 
 int main(int argc, char *argv[]) {
