@@ -26,6 +26,7 @@ foreach(prj_test_name ${PRJ_TEST_NAMES})
 
   target_compile_definitions(${prj_test_name} PUBLIC ${LLVM_DEFINITIONS})
 
+  target_include_directories(${prj_test_name} PUBLIC "../include")
   target_include_directories(${prj_test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
   target_include_directories(${prj_test_name} PUBLIC ${GTEST_INCLUDE_DIRS})
   target_include_directories(${prj_test_name} PUBLIC ${LLVM_INCLUDE_DIRS})
