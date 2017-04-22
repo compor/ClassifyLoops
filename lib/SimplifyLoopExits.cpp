@@ -16,6 +16,10 @@
 #include "llvm/IR/Function.h"
 // using llvm::Function
 
+#include "llvm/Analysis/LoopInfo.h"
+// using llvm::LoopInfoWrapperPass
+// using llvm::LoopInfo
+
 #include "llvm/Support/Casting.h"
 // using llvm::dyn_cast
 
@@ -44,12 +48,17 @@
 #define STRINGIFY_UTIL(x) #x
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
-#define PRJ_CMDLINE_STRING                                                     \
-  "simplify loop exits (version: " STRINGIFY(VERSION_STRING) ")"
+#define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
 
 char SimplifyLoopExits::ID = 0;
 static llvm::RegisterPass<SimplifyLoopExits>
-    X("simplifyloopexits", PRJ_CMDLINE_STRING, false, false);
+    tmp1("simplifyloopexits", PRJ_CMDLINE_STRING("simplify loop exits"), false,
+         false);
+
+char ClassifyLoopExits::ID = 0;
+static llvm::RegisterPass<ClassifyLoopExits>
+    tmp2("classifyloopexits", PRJ_CMDLINE_STRING("classify loop exits"), false,
+         false);
 
 // plugin registration for clang
 
@@ -72,10 +81,42 @@ static llvm::RegisterStandardPasses
 
 //
 
+static void registerClassifyLoopExits(const llvm::PassManagerBuilder &Builder,
+                                      llvm::legacy::PassManagerBase &PM) {
+  PM.add(new ClassifyLoopExits());
+
+  return;
+}
+
+static llvm::RegisterStandardPasses
+    RegisterClassifyLoopExits(llvm::PassManagerBuilder::EP_EarlyAsPossible,
+                              registerClassifyLoopExits);
+
+//
+
 namespace {
 
-bool SimplifyLoopExits::runOnFunction(llvm::Function &f) {
+bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
+  m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+
   return false;
+}
+
+void ClassifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
+  AU.setPreservesAll();
+  AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
+
+  return;
+}
+
+//
+
+bool SimplifyLoopExits::runOnFunction(llvm::Function &f) { return false; }
+
+void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
+  AU.setPreservesAll();
+
+  return;
 }
 
 } // namespace unnamed end
