@@ -50,6 +50,8 @@
 
 #define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
 
+namespace icsa {
+
 char SimplifyLoopExits::ID = 0;
 static llvm::RegisterPass<SimplifyLoopExits>
     tmp1("simplifyloopexits", PRJ_CMDLINE_STRING("simplify loop exits"), false,
@@ -93,8 +95,6 @@ static llvm::RegisterStandardPasses
                               registerClassifyLoopExits);
 
 //
-
-namespace {
 
 bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
   m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();

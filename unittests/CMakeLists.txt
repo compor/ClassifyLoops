@@ -26,10 +26,11 @@ foreach(prj_test_name ${PRJ_TEST_NAMES})
 
   target_compile_definitions(${prj_test_name} PUBLIC ${LLVM_DEFINITIONS})
 
-  target_include_directories(${prj_test_name} PUBLIC "../include")
   target_include_directories(${prj_test_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
   target_include_directories(${prj_test_name} PUBLIC ${GTEST_INCLUDE_DIRS})
   target_include_directories(${prj_test_name} PUBLIC ${LLVM_INCLUDE_DIRS})
+  target_include_directories(${prj_test_name} PUBLIC 
+    "${CMAKE_SOURCE_DIR}/include")
 
   target_link_libraries(${prj_test_name} PUBLIC ${GTEST_BOTH_LIBRARIES})  
   target_link_libraries(${prj_test_name} PUBLIC ${CMAKE_THREAD_LIBS_INIT})  
@@ -38,6 +39,7 @@ foreach(prj_test_name ${PRJ_TEST_NAMES})
     core support asmparser analysis passes)
 
   target_link_libraries(${prj_test_name} PUBLIC ${llvm_libs})
+  target_link_libraries(${prj_test_name} PUBLIC ${LIB_NAME})
 
   # setup dependency between unit test targets and their production code
   add_dependencies(${prj_test_name} ${LIB_NAME})

@@ -15,7 +15,7 @@ class AnalysisUsage;
 class LoopInfo;
 } // namespace llvm end
 
-namespace {
+namespace icsa {
 
 class ClassifyLoopExits : public llvm::FunctionPass {
 public:
