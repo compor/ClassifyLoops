@@ -13,12 +13,16 @@ namespace llvm {
 class Function;
 class AnalysisUsage;
 class LoopInfo;
+class Loop;
 } // namespace llvm end
 
 namespace icsa {
 
-class ClassifyLoopExits : public llvm::FunctionPass {
-public:
+struct LoopExitStats {
+  static unsigned int getNonHeaderExits(const llvm::Loop &L);
+};
+
+struct ClassifyLoopExits : public llvm::FunctionPass {
   static char ID;
 
   ClassifyLoopExits() : llvm::FunctionPass(ID) {}
@@ -26,7 +30,6 @@ public:
   bool runOnFunction(llvm::Function &f) override;
   void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
 
-private:
   llvm::LoopInfo *m_LI;
 };
 
@@ -42,4 +45,4 @@ public:
   void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
 };
 
-} // namespace unnamed end
+} // namespace icsa end

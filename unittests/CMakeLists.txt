@@ -39,7 +39,9 @@ foreach(prj_test_name ${PRJ_TEST_NAMES})
     core support asmparser analysis passes)
 
   target_link_libraries(${prj_test_name} PUBLIC ${llvm_libs})
-  target_link_libraries(${prj_test_name} PUBLIC ${LIB_NAME})
+
+  set_property(TARGET ${prj_test_name} APPEND_STRING PROPERTY 
+    LINK_FLAGS " -Wl,--warn-unresolved-symbols")
 
   # setup dependency between unit test targets and their production code
   add_dependencies(${prj_test_name} ${LIB_NAME})

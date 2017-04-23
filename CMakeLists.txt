@@ -66,7 +66,7 @@ set(LIB_NAME "LLVMSimplifyLoopExitsPass")
 set(LIB_SOURCES "lib/SimplifyLoopExits.cpp")
 
 if(NOT PRJ_USE_LLVM_INTERNAL_MODULE)
-  add_library(${LIB_NAME} SHARED ${LIB_SOURCES})
+  add_library(${LIB_NAME} MODULE ${LIB_SOURCES})
 else()
   # this follows the suggestion documented in
   # http://llvm.org/docs/CMake.html#cmake-out-of-source-pass
@@ -83,8 +83,8 @@ endif()
 # via opt or clang which already have those libs in their dependencies
 # comment out the following two statements to test against static lib LLVM build
 
-llvm_map_components_to_libnames(llvm_libs core support analysis ipo passes)
-target_link_libraries(${LIB_NAME} PUBLIC ${llvm_libs})
+#llvm_map_components_to_libnames(llvm_libs core support analysis ipo passes)
+#target_link_libraries(${LIB_NAME} PUBLIC ${llvm_libs})
 
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
 target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})

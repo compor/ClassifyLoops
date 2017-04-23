@@ -43,6 +43,19 @@ public:
   TestClassifyLoopExits()
       : m_Module{nullptr}, m_Func{nullptr}, CLE{*new ClassifyLoopExits()} {}
 
+  static int initialize() {
+    auto *registry = llvm::PassRegistry::getPassRegistry();
+
+    auto *PI =
+        new llvm::PassInfo("Classify Loop Exits (test)", "",
+                           &icsa::ClassifyLoopExits::ID, nullptr, false, false);
+
+    registry->registerPass(*PI, false);
+    llvm::initializeLoopInfoWrapperPassPass(*registry);
+
+    return 0;
+  }
+
   void ParseAssembly(const char *Assembly) {
     llvm::SMDiagnostic err;
 
@@ -60,6 +73,8 @@ public:
     if (!m_Func)
       llvm::report_fatal_error("Test must have a function named @test");
 
+    (void)initialize();
+
     m_PM.add(&CLE);
     m_PM.run(*m_Module);
 
@@ -73,34 +88,8 @@ protected:
   ClassifyLoopExits &CLE;
 };
 
-TEST_F(TestClassifyLoopExits, DISABLED_Dummy) {
-  ParseAssembly("define void @foo() {\n"
-                "entry:\n"
-                "  bitcast i8 undef to i8\n"
-                "  %B = bitcast i8 undef to i8\n"
-                "  bitcast i8 undef to i8\n"
-                "  bitcast i8 undef to i8\n"
-                "  %A = bitcast i8 undef to i8\n"
-                "  ret void\n"
-                "}\n");
-
-  EXPECT_EQ(true, true);
-}
-
-TEST_F(TestClassifyLoopExits, ReturnsZeroLoopExitsWhenNoLoops) {
-  ParseAssembly("define void @foo() {\n"
-                "entry:\n"
-                "  bitcast i8 undef to i8\n"
-                "  %B = bitcast i8 undef to i8\n"
-                "  bitcast i8 undef to i8\n"
-                "  bitcast i8 undef to i8\n"
-                "  %A = bitcast i8 undef to i8\n"
-                "  ret void\n"
-                "}\n");
-}
-
 TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
-  ParseAssembly("define void @foo() {\n"
+  ParseAssembly("define void @test() {\n"
                 "%i = alloca i32, align 4\n"
                 "%a = alloca i32, align 4\n"
                 "store i32 100, i32* %i, align 4\n"
@@ -120,6 +109,8 @@ TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
 
                 "ret void\n"
                 "}\n");
+
+  EXPECT_EQ(0, LoopExitStats::getNonHeaderExits(**(CLE.m_LI->begin())));
 }
 
 int main(int argc, char *argv[]) {

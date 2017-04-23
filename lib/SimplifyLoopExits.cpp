@@ -30,6 +30,8 @@
 // using llvm::PassManagerBuilder
 // using llvm::RegisterStandardPasses
 
+#include "llvm/ADT/SmallVector.h"
+
 #include "llvm/Support/raw_ostream.h"
 // using llvm::raw_ostream
 
@@ -119,4 +121,12 @@ void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   return;
 }
 
-} // namespace unnamed end
+
+unsigned int LoopExitStats::getNonHeaderExits(const llvm::Loop &L) {
+  llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
+  L.getExitingBlocks(exiting);
+
+  return exiting.size();
+}
+
+} // namespace icsa end
