@@ -41,21 +41,7 @@ namespace {
 
 class TestClassifyLoopExits : public testing::Test {
 public:
-  TestClassifyLoopExits()
-      : m_Module{nullptr}, m_Func{nullptr}, CLE{*new ClassifyLoopExits()} {}
-
-  static int initialize() {
-    auto *registry = llvm::PassRegistry::getPassRegistry();
-
-    auto *PI =
-        new llvm::PassInfo("Classify Loop Exits (test)", "",
-                           &icsa::ClassifyLoopExits::ID, nullptr, false, false);
-
-    registry->registerPass(*PI, false);
-    llvm::initializeLoopInfoWrapperPassPass(*registry);
-
-    return 0;
-  }
+  TestClassifyLoopExits() : m_Module{nullptr} {}
 
   void ParseAssembly(const char *Assembly) {
     llvm::SMDiagnostic err;
@@ -70,23 +56,63 @@ public:
     if (!m_Module)
       llvm::report_fatal_error(os.str().c_str());
 
-    m_Func = m_Module->getFunction("test");
-    if (!m_Func)
+    auto *Func = m_Module->getFunction("test");
+    if (!Func)
       llvm::report_fatal_error("Test must have a function named @test");
 
-    (void)initialize();
+    return;
+  }
 
-    m_PM.add(&CLE);
-    m_PM.run(*m_Module);
+  void ExpectTestPass() {
+    static char ID;
+
+    struct UtilityPass : public llvm::FunctionPass {
+      UtilityPass() : llvm::FunctionPass(ID) {}
+
+      static int initialize() {
+        auto *registry = llvm::PassRegistry::getPassRegistry();
+
+        auto *PI = new llvm::PassInfo("Utility pass for unit tests", "", &ID,
+                                      nullptr, true, true);
+
+        registry->registerPass(*PI, false);
+        llvm::initializeLoopInfoWrapperPassPass(*registry);
+
+        return 0;
+      }
+
+      void getAnalysisUsage(llvm::AnalysisUsage &AU) const override {
+        AU.setPreservesAll();
+        AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
+
+        return;
+      }
+
+      bool runOnFunction(llvm::Function &F) override {
+        if (!F.hasName() || !F.getName().startswith("test"))
+          return false;
+
+        auto &LI = getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+        //LI.print(llvm::outs());
+
+        return false;
+      }
+    };
+
+    static int init = UtilityPass::initialize();
+    (void)init; // do not optimize away
+
+    auto *P = new UtilityPass();
+    llvm::legacy::PassManager PM;
+
+    PM.add(P);
+    PM.run(*m_Module);
 
     return;
   }
 
 protected:
-  llvm::legacy::PassManager m_PM;
   std::unique_ptr<llvm::Module> m_Module;
-  llvm::Function *m_Func;
-  ClassifyLoopExits &CLE;
 };
 
 TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
@@ -111,14 +137,7 @@ TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
                 "ret void\n"
                 "}\n");
 
-  auto *loop = *(CLE.m_LI->begin());
-  EXPECT_EQ(0, LoopExitStats::getNonHeaderExits(*loop));
-}
-
-int main(int argc, char *argv[]) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
+  ExpectTestPass();
 }
 
 } // namespace anonymous end
