@@ -37,6 +37,7 @@
 #include "SimplifyLoopExits.hpp"
 
 namespace icsa {
+namespace {
 
 class TestClassifyLoopExits : public testing::Test {
 public:
@@ -119,4 +120,5 @@ int main(int argc, char *argv[]) {
   return RUN_ALL_TESTS();
 }
 
-} // namespace unnamed end
+} // namespace anonymous end
+} // namespace icsa end
