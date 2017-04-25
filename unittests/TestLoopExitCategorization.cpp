@@ -2,6 +2,9 @@
 #include <memory>
 // using std::unique_ptr
 
+#include <cassert>
+// using assert
+
 #include "llvm/IR/LLVMContext.h"
 // using llvm::LLVMContext
 
@@ -94,6 +97,12 @@ public:
 
         auto &LI = getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
         //LI.print(llvm::outs());
+
+        auto &CurLoop = *LI.begin();
+        assert(CurLoop && "Loop ptr is invalid");
+
+        auto rv = LoopExitStats::getExits(*CurLoop);
+        EXPECT_EQ(1, rv);
 
         return false;
       }

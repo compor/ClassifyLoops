@@ -19,7 +19,7 @@ class Loop;
 namespace icsa {
 
 struct LoopExitStats {
-  static unsigned int getNonHeaderExits(const llvm::Loop &L);
+  static unsigned int getExits(const llvm::Loop &L);
 };
 
 struct ClassifyLoopExits : public llvm::FunctionPass {

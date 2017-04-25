@@ -122,7 +122,7 @@ void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 }
 
 
-unsigned int LoopExitStats::getNonHeaderExits(const llvm::Loop &L) {
+unsigned int LoopExitStats::getExits(const llvm::Loop &L) {
   llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
   L.getExitingBlocks(exiting);
 
