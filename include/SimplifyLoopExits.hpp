@@ -12,6 +12,7 @@
 namespace llvm {
 class Function;
 class AnalysisUsage;
+class DominatorTree;
 class LoopInfo;
 class Loop;
 } // namespace llvm end
@@ -29,8 +30,10 @@ struct ClassifyLoopExits : public llvm::FunctionPass {
 
   bool runOnFunction(llvm::Function &f) override;
   void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
+  bool doFinalization(llvm::Module &M) override;
 
   llvm::LoopInfo *m_LI;
+  llvm::DominatorTree *m_DT;
 };
 
 //

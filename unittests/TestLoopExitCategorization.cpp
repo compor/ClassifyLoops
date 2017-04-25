@@ -19,6 +19,9 @@
 // using llvm::LoopInfoWrapperPass
 // using llvm::LoopInfo
 
+#include "llvm/IR/Dominators.h"
+// using llvm::DominatorTree
+
 #include "llvm/Support/SourceMgr.h"
 // using llvm::SMDiagnostic
 
@@ -30,6 +33,7 @@
 
 #include "llvm/Support/raw_ostream.h"
 // using llvm::raw_string_ostream
+// using llvm::outs
 
 #include "gtest/gtest.h"
 // using testing::Test
@@ -49,9 +53,10 @@ public:
 
     auto *PI =
         new llvm::PassInfo("Classify Loop Exits (test)", "",
-                           &icsa::ClassifyLoopExits::ID, nullptr, false, false);
+                           &icsa::ClassifyLoopExits::ID, nullptr, true, true);
 
     registry->registerPass(*PI, false);
+    llvm::initializeDominatorTreeWrapperPassPass(*registry);
     llvm::initializeLoopInfoWrapperPassPass(*registry);
 
     return 0;
@@ -78,6 +83,9 @@ public:
 
     m_PM.add(&CLE);
     m_PM.run(*m_Module);
+
+    llvm::outs() << CLE.m_LI << "\n";
+    CLE.m_LI->print(llvm::outs());
 
     return;
   }
@@ -111,14 +119,9 @@ TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
                 "ret void\n"
                 "}\n");
 
-  auto *loop = *(CLE.m_LI->begin());
-  EXPECT_EQ(0, LoopExitStats::getNonHeaderExits(*loop));
-}
-
-int main(int argc, char *argv[]) {
-  ::testing::InitGoogleTest(&argc, argv);
-
-  return RUN_ALL_TESTS();
+  CLE.m_DT->print(llvm::outs());
+  llvm::LoopInfo LI;
+  LI.Analyze(*CLE.m_DT);
 }
 
 } // namespace anonymous end

@@ -20,6 +20,9 @@
 // using llvm::LoopInfoWrapperPass
 // using llvm::LoopInfo
 
+#include "llvm/IR/Dominators.h"
+// using llvm::DominatorTree
+
 #include "llvm/Support/Casting.h"
 // using llvm::dyn_cast
 
@@ -61,8 +64,8 @@ static llvm::RegisterPass<SimplifyLoopExits>
 
 char ClassifyLoopExits::ID = 0;
 static llvm::RegisterPass<ClassifyLoopExits>
-    tmp2("classifyloopexits", PRJ_CMDLINE_STRING("classify loop exits"), false,
-         false);
+    tmp2("classifyloopexits", PRJ_CMDLINE_STRING("classify loop exits"), true,
+         true);
 
 // plugin registration for clang
 
@@ -74,9 +77,9 @@ static llvm::RegisterPass<ClassifyLoopExits>
 
 static void registerSimplifyLoopExits(const llvm::PassManagerBuilder &Builder,
                                       llvm::legacy::PassManagerBase &PM) {
-  PM.add(new SimplifyLoopExits());
+    PM.add(new SimplifyLoopExits());
 
-  return;
+    return;
 }
 
 static llvm::RegisterStandardPasses
@@ -87,9 +90,9 @@ static llvm::RegisterStandardPasses
 
 static void registerClassifyLoopExits(const llvm::PassManagerBuilder &Builder,
                                       llvm::legacy::PassManagerBase &PM) {
-  PM.add(new ClassifyLoopExits());
+    PM.add(new ClassifyLoopExits());
 
-  return;
+    return;
 }
 
 static llvm::RegisterStandardPasses
@@ -99,16 +102,28 @@ static llvm::RegisterStandardPasses
 //
 
 bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
-  m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+    m_DT = &getAnalysis<llvm::DominatorTreeWrapperPass>().getDomTree();
+    m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+    m_LI->print(llvm::outs());
+    m_DT->print(llvm::outs());
 
-  return false;
+    return false;
 }
 
 void ClassifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
-  AU.setPreservesAll();
-  AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
+    AU.setPreservesAll();
+    AU.addRequiredTransitive<llvm::DominatorTreeWrapperPass>();
+    AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
 
-  return;
+    return;
+}
+
+bool ClassifyLoopExits::doFinalization(llvm::Module &M) {
+    llvm::outs() << "in " << __func__ << "\n";
+    m_LI->print(llvm::outs());
+    llvm::outs() << "in " << __func__ << "\n";
+
+    return false;
 }
 
 //
@@ -116,17 +131,17 @@ void ClassifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 bool SimplifyLoopExits::runOnFunction(llvm::Function &f) { return false; }
 
 void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
-  AU.setPreservesAll();
+    AU.setPreservesAll();
 
-  return;
+    return;
 }
 
-
 unsigned int LoopExitStats::getNonHeaderExits(const llvm::Loop &L) {
-  llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
-  L.getExitingBlocks(exiting);
+    llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
+    L.getExitingBlocks(exiting);
+    L.print(llvm::outs());
 
-  return exiting.size();
+    return exiting.size();
 }
 
 } // namespace icsa end

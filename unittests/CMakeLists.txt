@@ -36,7 +36,7 @@ foreach(prj_test_name ${PRJ_TEST_NAMES})
   target_link_libraries(${prj_test_name} PUBLIC ${CMAKE_THREAD_LIBS_INIT})  
 
   llvm_map_components_to_libnames(llvm_libs 
-    core support asmparser analysis passes)
+    core support asmparser analysis passes ipo)
 
   target_link_libraries(${prj_test_name} PUBLIC ${llvm_libs})
 
