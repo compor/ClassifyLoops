@@ -111,7 +111,8 @@ TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
                 "ret void\n"
                 "}\n");
 
-  EXPECT_EQ(0, LoopExitStats::getNonHeaderExits(**(CLE.m_LI->begin())));
+  auto *loop = *(CLE.m_LI->begin());
+  EXPECT_EQ(0, LoopExitStats::getNonHeaderExits(*loop));
 }
 
 int main(int argc, char *argv[]) {
