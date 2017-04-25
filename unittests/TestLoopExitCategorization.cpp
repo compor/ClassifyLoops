@@ -2,6 +2,9 @@
 #include <memory>
 // using std::unique_ptr
 
+#include <map>
+// using std::map
+
 #include <cassert>
 // using assert
 
@@ -37,10 +40,20 @@
 #include "gtest/gtest.h"
 // using testing::Test
 
+#include "boost/variant.hpp"
+// using boost::variant
+
 #include "SimplifyLoopExits.hpp"
 
 namespace icsa {
 namespace {
+
+using test_result_t = boost::variant<unsigned int>;
+using test_result_map = std::map<std::string, test_result_t>;
+
+struct test_result_visitor : public boost::static_visitor<unsigned int> {
+  unsigned int operator()(unsigned int i) const { return i; }
+};
 
 class TestClassifyLoopExits : public testing::Test {
 public:
@@ -66,11 +79,12 @@ public:
     return;
   }
 
-  void ExpectTestPass() {
+  void ExpectTestPass(const test_result_map &trm) {
     static char ID;
 
     struct UtilityPass : public llvm::FunctionPass {
-      UtilityPass() : llvm::FunctionPass(ID) {}
+      UtilityPass(const test_result_map &trm)
+          : llvm::FunctionPass(ID), m_trm(trm) {}
 
       static int initialize() {
         auto *registry = llvm::PassRegistry::getPassRegistry();
@@ -96,22 +110,32 @@ public:
           return false;
 
         auto &LI = getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
-        //LI.print(llvm::outs());
+        // LI.print(llvm::outs());
 
         auto &CurLoop = *LI.begin();
         assert(CurLoop && "Loop ptr is invalid");
 
-        auto rv = LoopExitStats::getExits(*CurLoop);
-        EXPECT_EQ(1, rv);
+        test_result_map::const_iterator found;
+
+        // subcase
+        found = m_trm.find("exits");
+        assert(m_trm.end() != found && "no test case data found");
+
+        const auto &rv = LoopExitStats::getExits(*CurLoop);
+        const auto &ev =
+            boost::apply_visitor(test_result_visitor(), found->second);
+        EXPECT_EQ(ev, rv);
 
         return false;
       }
+
+      const test_result_map &m_trm;
     };
 
     static int init = UtilityPass::initialize();
     (void)init; // do not optimize away
 
-    auto *P = new UtilityPass();
+    auto *P = new UtilityPass(trm);
     llvm::legacy::PassManager PM;
 
     PM.add(P);
@@ -146,7 +170,10 @@ TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
                 "ret void\n"
                 "}\n");
 
-  ExpectTestPass();
+  test_result_map trm;
+
+  trm.insert({"exits", 1});
+  ExpectTestPass(trm);
 }
 
 } // namespace anonymous end
