@@ -122,7 +122,7 @@ class TestClassifyLoopExits : public testing::Test {
                 test_result_map::const_iterator found;
 
                 // subcase
-                found = lookup("exits");
+                found = lookup("number of exits");
 
                 const auto &rv = LoopExitStats::getExits(*CurLoop);
                 const auto &ev =
@@ -162,7 +162,7 @@ class TestClassifyLoopExits : public testing::Test {
     std::unique_ptr<llvm::Module> m_Module;
 };
 
-TEST_F(TestClassifyLoopExits, ReturnsSingleExitForRegularLoop) {
+TEST_F(TestClassifyLoopExits, RegularLoopExits) {
     ParseAssembly("define void @test() {\n"
                   "%i = alloca i32, align 4\n"
                   "%a = alloca i32, align 4\n"
