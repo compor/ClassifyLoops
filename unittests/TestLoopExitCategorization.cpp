@@ -186,7 +186,25 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
 
     test_result_map trm;
 
-    trm.insert({"exits", 1});
+    trm.insert({"number of exits", 1});
+    ExpectTestPass(trm);
+}
+
+TEST_F(TestClassifyLoopExits, InfiniteLoop) {
+    ParseAssembly("define void @test() {\n"
+                  "%a = alloca i32, align 4\n"
+                  "store i32 0, i32* %a, align 4\n"
+                  "br label %1\n"
+                  "%2 = load i32, i32* %a, align 4\n"
+                  "%3 = add nsw i32 %2, 1\n"
+                  "store i32 %3, i32* %a, align 4\n"
+                  "br label %1\n"
+                  "ret void\n"
+                  "}\n");
+
+    test_result_map trm;
+
+    trm.insert({"number of exits", 0});
     ExpectTestPass(trm);
 }
 
