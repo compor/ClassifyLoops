@@ -94,15 +94,12 @@ target_include_directories(${LIB_NAME} PUBLIC "include")
 
 #
 
+set(TESTEE_LIB ${LIB_NAME})
+
 add_subdirectory(unittests)
 add_subdirectory(tests)
 add_subdirectory(docs)
 
-
-# TODO better way to deduce library name, especially when using llvm cmake
-# functions
-get_target_property(PRJ_LIB_NAMES ${LIB_NAME} NAME)
-set(PRJ_LIB_NAMES "${PRJ_LIB_NAMES} ${LIB_NAME}.so lib${LIB_NAME}.so")
 
 attach_compilation_db_command(${LIB_NAME})
 

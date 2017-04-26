@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+export LD_LIBRARY_PATH=$(llvm-config --libdir) 
+
+cmake --build . --target @PRJ_UNIT_TESTS_TARGET@
+
+LD_PRELOAD=./@TESTEE_LIB_FILENAME@ \
+    ./unittests/@PRJ_UNIT_TESTS_EXE@
+
