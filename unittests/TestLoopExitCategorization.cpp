@@ -127,7 +127,7 @@ class TestClassifyLoopExits : public testing::Test {
                 const auto &rv = LoopExitStats::getExits(*CurLoop);
                 const auto &ev =
                     boost::apply_visitor(test_result_visitor(), found->second);
-                EXPECT_EQ(ev, rv);
+                EXPECT_EQ(ev, rv) << found->first;
 
                 return false;
             }
@@ -190,7 +190,7 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
     ExpectTestPass(trm);
 }
 
-TEST_F(TestClassifyLoopExits, InfiniteLoop) {
+TEST_F(TestClassifyLoopExits, InfiniteLoopExits) {
     ParseAssembly("define void @test() {\n"
                   "%a = alloca i32, align 4\n"
                   "store i32 0, i32* %a, align 4\n"
