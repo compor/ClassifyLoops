@@ -208,5 +208,24 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
   ExpectTestPass(trm);
 }
 
+TEST_F(TestClassifyLoopExits, DeadLoopExits) {
+  ParseAssembly("define void @test() {\n"
+                "%a = alloca i32, align 4\n"
+                "store i32 0, i32* %a, align 4\n"
+                "br label %1\n"
+                "br i1 false, label %2, label %5\n"
+                "%3 = load i32, i32* %a, align 4\n"
+                "%4 = add nsw i32 %3, 1\n"
+                "store i32 %4, i32* %a, align 4\n"
+                "br label %1\n"
+                "ret void\n"
+                "}\n");
+
+  test_result_map trm;
+
+  trm.insert({"number of exits", 1});
+  ExpectTestPass(trm);
+}
+
 } // namespace anonymous end
 } // namespace icsa end
