@@ -346,5 +346,45 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
   trm.insert({"number of exits", 2});
   ExpectTestPass(trm);
 }
+
+TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
+  ParseAssembly("define void @test() {\n"
+                "%i = alloca i32, align 4\n"
+                "%a = alloca i32, align 4\n"
+                "store i32 100, i32* %i, align 4\n"
+                "store i32 0, i32* %a, align 4\n"
+                "br label %1\n"
+
+                "%2 = load i32, i32* %i, align 4\n"
+                "%3 = add nsw i32 %2, -1\n"
+                "store i32 %3, i32* %i, align 4\n"
+                "%4 = icmp ne i32 %3, 0\n"
+                "br i1 %4, label %5, label %14\n"
+
+                "%6 = load i32, i32* %a, align 4\n"
+                "%7 = add nsw i32 %6, 1\n"
+                "store i32 %7, i32* %a, align 4\n"
+                "%8 = load i32, i32* %a, align 4\n"
+                "%9 = icmp eq i32 %8, 50\n"
+                "br i1 %9, label %10, label %11\n"
+
+                "call void @exit(i32 1) #2\n"
+                "unreachable\n"
+
+                "%12 = load i32, i32* %a, align 4\n"
+                "%13 = add nsw i32 %12, 1\n"
+                "store i32 %13, i32* %a, align 4\n"
+                "br label %1\n"
+
+                "ret void\n"
+                "}\n"
+
+                "declare void @exit(i32)\n");
+
+  test_result_map trm;
+
+  trm.insert({"number of exits", 2});
+  ExpectTestPass(trm);
+}
 } // namespace anonymous end
 } // namespace icsa end
