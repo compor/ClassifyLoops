@@ -188,7 +188,7 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
   ExpectTestPass(trm);
 }
 
-TEST_F(TestClassifyLoopExits, InfiniteLoopExits) {
+TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
   ParseAssembly("define void @test() {\n"
                 "%a = alloca i32, align 4\n"
                 "store i32 0, i32* %a, align 4\n"
