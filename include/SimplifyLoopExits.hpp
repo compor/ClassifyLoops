@@ -23,6 +23,7 @@ struct LoopExitStats {
 };
 
 struct ClassifyLoopExits : public llvm::FunctionPass {
+
   static char ID;
 
   ClassifyLoopExits() : llvm::FunctionPass(ID) {}

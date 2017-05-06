@@ -34,6 +34,9 @@
 #include "llvm/AsmParser/Parser.h"
 // using llvm::parseAssemblyString
 
+#include "llvm/IR/Verifier.h"
+// using llvm::verifyModule
+
 #include "llvm/Support/ErrorHandling.h"
 // using llvm::report_fatal_error
 
@@ -51,33 +54,47 @@
 namespace icsa {
 namespace {
 
-using test_result_t = boost::variant<unsigned int>;
+using test_result_t = boost::variant<bool, unsigned int>;
 using test_result_map = std::map<std::string, test_result_t>;
 
 struct test_result_visitor : public boost::static_visitor<unsigned int> {
+  unsigned int operator()(bool b) const { return b ? 1 : 0; }
   unsigned int operator()(unsigned int i) const { return i; }
 };
 
 class TestClassifyLoopExits : public testing::Test {
 public:
-  TestClassifyLoopExits() : m_Module{nullptr} {}
+  enum struct AssemblyHolderType : int { FILE_TYPE, STRING_TYPE };
 
-  void ParseAssembly(const char *Assembly) {
+  TestClassifyLoopExits()
+      : m_Module{nullptr}, m_TestDataDir{"./unittests/data/"} {}
+
+  void ParseAssembly(
+      const char *AssemblyHolder,
+      const AssemblyHolderType asmHolder = AssemblyHolderType::FILE_TYPE) {
     llvm::SMDiagnostic err;
 
+    if (AssemblyHolderType::FILE_TYPE == asmHolder) {
+      std::string fullFilename{m_TestDataDir};
+      fullFilename += AssemblyHolder;
+
     m_Module =
-        llvm::parseAssemblyString(Assembly, err, llvm::getGlobalContext());
+          llvm::parseAssemblyFile(fullFilename, err, llvm::getGlobalContext());
+
+    } else {
+      m_Module = llvm::parseAssemblyString(AssemblyHolder, err,
+                                           llvm::getGlobalContext());
+    }
 
     std::string errMsg;
     llvm::raw_string_ostream os(errMsg);
     err.print("", os);
 
+    if (llvm::verifyModule(*m_Module, &(llvm::errs())))
+      llvm::report_fatal_error("module verification failed\n");
+
     if (!m_Module)
       llvm::report_fatal_error(os.str().c_str());
-
-    auto *Func = m_Module->getFunction("test");
-    if (!Func)
-      llvm::report_fatal_error("Test must have a function named @test");
 
     return;
   }
@@ -158,6 +175,7 @@ public:
 
 protected:
   std::unique_ptr<llvm::Module> m_Module;
+  const char *m_TestDataDir;
 };
 
 TEST_F(TestClassifyLoopExits, RegularLoopExits) {
@@ -180,7 +198,7 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
                 "br label %1\n"
 
                 "ret void\n"
-                "}\n");
+                "}\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -200,7 +218,7 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
                 "br label %1\n"
 
                 "ret void\n"
-                "}\n");
+                "}\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -219,7 +237,7 @@ TEST_F(TestClassifyLoopExits, DeadLoopExits) {
                 "store i32 %4, i32* %a, align 4\n"
                 "br label %1\n"
                 "ret void\n"
-                "}\n");
+                "}\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -259,7 +277,7 @@ TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
                 "br label %14\n"
 
                 "ret void\n"
-                "}\n");
+                "}\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -299,7 +317,7 @@ TEST_F(TestClassifyLoopExits, ContinueConditionLoopExits) {
                 "br label %.backedge\n"
 
                 "ret void\n"
-                "}\n");
+                "}\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -339,7 +357,7 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
                 "br label %14\n"
 
                 "ret void\n"
-                "}\n");
+                "}\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -379,7 +397,7 @@ TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
                 "ret void\n"
                 "}\n"
 
-                "declare void @exit(i32)\n");
+                "declare void @exit(i32)\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
@@ -419,7 +437,7 @@ TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
                 "ret void\n"
                 "}\n"
 
-                "declare void @potential_exit(i32)\n");
+                "declare void @potential_exit(i32)\n", AssemblyHolderType::STRING_TYPE);
 
   test_result_map trm;
 
