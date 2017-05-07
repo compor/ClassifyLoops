@@ -2,6 +2,8 @@
 //
 //
 
+#define DEBUG_TYPE "SimplifyLoopExits"
+
 #include "SimplifyLoopExits.hpp"
 
 #include "llvm/Pass.h"
@@ -38,8 +40,6 @@
 #include "llvm/Support/CommandLine.h"
 // using llvm::cl::opt
 // using llvm::cl::desc
-
-#define DEBUG_TYPE "SimplifyLoopExits"
 
 #include "llvm/Support/Debug.h"
 // using DEBUG macro
