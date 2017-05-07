@@ -78,7 +78,7 @@ public:
       std::string fullFilename{m_TestDataDir};
       fullFilename += AssemblyHolder;
 
-    m_Module =
+      m_Module =
           llvm::parseAssemblyFile(fullFilename, err, llvm::getGlobalContext());
 
     } else {
@@ -179,27 +179,7 @@ protected:
 };
 
 TEST_F(TestClassifyLoopExits, RegularLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%i = alloca i32, align 4\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 100, i32* %i, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %i, align 4\n"
-                "%3 = add nsw i32 %2, -1\n"
-                "store i32 %3, i32* %i, align 4\n"
-                "%4 = icmp ne i32 %3, 0\n"
-                "br i1 %4, label %5, label %8\n"
-
-                "%6 = load i32, i32* %a, align 4\n"
-                "%7 = add nsw i32 %6, 1\n"
-                "store i32 %7, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "ret void\n"
-                "}\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test01.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 1});
@@ -207,19 +187,7 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %a, align 4\n"
-                "%3 = add nsw i32 %2, 1\n"
-                "store i32 %3, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "ret void\n"
-                "}\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test02.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 0});
@@ -227,18 +195,7 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, DeadLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-                "br i1 false, label %2, label %5\n"
-                "%3 = load i32, i32* %a, align 4\n"
-                "%4 = add nsw i32 %3, 1\n"
-                "store i32 %4, i32* %a, align 4\n"
-                "br label %1\n"
-                "ret void\n"
-                "}\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test03.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 1});
@@ -246,39 +203,7 @@ TEST_F(TestClassifyLoopExits, DeadLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%i = alloca i32, align 4\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 100, i32* %i, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %i, align 4\n"
-                "%3 = add nsw i32 %2, -1\n"
-                "store i32 %3, i32* %i, align 4\n"
-                "%4 = icmp ne i32 %3, 0\n"
-                "br i1 %4, label %5, label %.loopexit\n"
-
-                "%6 = load i32, i32* %a, align 4\n"
-                "%7 = add nsw i32 %6, 1\n"
-                "store i32 %7, i32* %a, align 4\n"
-                "%8 = load i32, i32* %a, align 4\n"
-                "%9 = icmp eq i32 %8, 50\n"
-                "br i1 %9, label %10, label %11\n"
-
-                "br label %14\n"
-
-                "%12 = load i32, i32* %a, align 4\n"
-                "%13 = add nsw i32 %12, 1\n"
-                "store i32 %13, i32* %a, align 4\n"
-                "br label %1\n"
-
-                ".loopexit:   \n"
-                "br label %14\n"
-
-                "ret void\n"
-                "}\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test04.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 2});
@@ -286,39 +211,7 @@ TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, ContinueConditionLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%i = alloca i32, align 4\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 100, i32* %i, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %i, align 4\n"
-                "%3 = add nsw i32 %2, -1\n"
-                "store i32 %3, i32* %i, align 4\n"
-                "%4 = icmp ne i32 %3, 0\n"
-                "br i1 %4, label %5, label %14\n"
-
-                "%6 = load i32, i32* %a, align 4\n"
-                "%7 = add nsw i32 %6, 1\n"
-                "store i32 %7, i32* %a, align 4\n"
-                "%8 = load i32, i32* %a, align 4\n"
-                "%9 = icmp eq i32 %8, 50\n"
-                "br i1 %9, label %10, label %11\n"
-
-                "br label %.backedge\n"
-
-                ".backedge:\n"
-                "br label %1\n"
-
-                "%12 = load i32, i32* %a, align 4\n"
-                "%13 = add nsw i32 %12, 1\n"
-                "store i32 %13, i32* %a, align 4\n"
-                "br label %.backedge\n"
-
-                "ret void\n"
-                "}\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test05.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 1});
@@ -326,39 +219,7 @@ TEST_F(TestClassifyLoopExits, ContinueConditionLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%i = alloca i32, align 4\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 100, i32* %i, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %i, align 4\n"
-                "%3 = add nsw i32 %2, -1\n"
-                "store i32 %3, i32* %i, align 4\n"
-                "%4 = icmp ne i32 %3, 0\n"
-                "br i1 %4, label %5, label %.loopexit\n"
-
-                "%6 = load i32, i32* %a, align 4\n"
-                "%7 = add nsw i32 %6, 1\n"
-                "store i32 %7, i32* %a, align 4\n"
-                "%8 = load i32, i32* %a, align 4\n"
-                "%9 = icmp eq i32 %8, 50\n"
-                "br i1 %9, label %10, label %11\n"
-
-                "br label %14\n"
-
-                "%12 = load i32, i32* %a, align 4\n"
-                "%13 = add nsw i32 %12, 1\n"
-                "store i32 %13, i32* %a, align 4\n"
-                "br label %1\n"
-
-                ".loopexit:\n"
-                "br label %14\n"
-
-                "ret void\n"
-                "}\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test06.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 2});
@@ -366,39 +227,7 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%i = alloca i32, align 4\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 100, i32* %i, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %i, align 4\n"
-                "%3 = add nsw i32 %2, -1\n"
-                "store i32 %3, i32* %i, align 4\n"
-                "%4 = icmp ne i32 %3, 0\n"
-                "br i1 %4, label %5, label %14\n"
-
-                "%6 = load i32, i32* %a, align 4\n"
-                "%7 = add nsw i32 %6, 1\n"
-                "store i32 %7, i32* %a, align 4\n"
-                "%8 = load i32, i32* %a, align 4\n"
-                "%9 = icmp eq i32 %8, 50\n"
-                "br i1 %9, label %10, label %11\n"
-
-                "call void @exit(i32 1) #2\n"
-                "unreachable\n"
-
-                "%12 = load i32, i32* %a, align 4\n"
-                "%13 = add nsw i32 %12, 1\n"
-                "store i32 %13, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "ret void\n"
-                "}\n"
-
-                "declare void @exit(i32)\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test07.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 2});
@@ -406,39 +235,7 @@ TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
 }
 
 TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
-  ParseAssembly("define void @test() {\n"
-                "%i = alloca i32, align 4\n"
-                "%a = alloca i32, align 4\n"
-                "store i32 100, i32* %i, align 4\n"
-                "store i32 0, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "%2 = load i32, i32* %i, align 4\n"
-                "%3 = add nsw i32 %2, -1\n"
-                "store i32 %3, i32* %i, align 4\n"
-                "%4 = icmp ne i32 %3, 0\n"
-                "br i1 %4, label %5, label %14\n"
-
-                "%6 = load i32, i32* %a, align 4\n"
-                "%7 = add nsw i32 %6, 1\n"
-                "store i32 %7, i32* %a, align 4\n"
-                "%8 = load i32, i32* %a, align 4\n"
-                "%9 = icmp eq i32 %8, 50\n"
-                "br i1 %9, label %10, label %11\n"
-
-                "call void @potential_exit(i32 1)\n"
-                "br label %11\n"
-
-                "%12 = load i32, i32* %a, align 4\n"
-                "%13 = add nsw i32 %12, 1\n"
-                "store i32 %13, i32* %a, align 4\n"
-                "br label %1\n"
-
-                "ret void\n"
-                "}\n"
-
-                "declare void @potential_exit(i32)\n", AssemblyHolderType::STRING_TYPE);
-
+  ParseAssembly("test08.ll");
   test_result_map trm;
 
   trm.insert({"number of exits", 1});
