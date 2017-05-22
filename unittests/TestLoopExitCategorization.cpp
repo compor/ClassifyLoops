@@ -54,12 +54,12 @@
 namespace icsa {
 namespace {
 
-using test_result_t = boost::variant<bool, unsigned int>;
+using test_result_t = boost::variant<bool, int>;
 using test_result_map = std::map<std::string, test_result_t>;
 
 struct test_result_visitor : public boost::static_visitor<unsigned int> {
   unsigned int operator()(bool b) const { return b ? 1 : 0; }
-  unsigned int operator()(unsigned int i) const { return i; }
+  unsigned int operator()(int i) const { return i; }
 };
 
 class TestClassifyLoopExits : public testing::Test {
@@ -148,9 +148,10 @@ public:
         return false;
       }
 
-      test_result_map::const_iterator lookup(const std::string &subcase) {
+      test_result_map::const_iterator lookup(const std::string &subcase,
+                                          bool fatalIfMissing = false) {
         auto found = m_trm.find(subcase);
-        if (m_trm.end() == found) {
+        if (fatalIfMissing && std::end(m_trm) == found) {
           llvm::errs() << "subcase: " << subcase << " test data not found\n";
           std::abort();
         }
