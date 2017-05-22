@@ -80,7 +80,6 @@ public:
 
       m_Module =
           llvm::parseAssemblyFile(fullFilename, err, llvm::getGlobalContext());
-
     } else {
       m_Module = llvm::parseAssemblyString(AssemblyHolder, err,
                                            llvm::getGlobalContext());
@@ -140,7 +139,9 @@ public:
         // subcase
         found = lookup("number of exits");
 
-        const auto &rv = LoopExitStats::getExits(*CurLoop);
+        const auto &stats = calculate(LI);
+        const auto &rv =
+            stats[0].second.NumHeaderExits + stats[0].second.NumNonHeaderExits;
         const auto &ev =
             boost::apply_visitor(test_result_visitor(), found->second);
         EXPECT_EQ(ev, rv) << found->first;
@@ -149,9 +150,9 @@ public:
       }
 
       test_result_map::const_iterator lookup(const std::string &subcase,
-                                          bool fatalIfMissing = false) {
+                                             bool fatalIfMissing = false) {
         auto found = m_trm.find(subcase);
-        if (fatalIfMissing && std::end(m_trm) == found) {
+        if (fatalIfMissing && m_trm.end() == found) {
           llvm::errs() << "subcase: " << subcase << " test data not found\n";
           std::abort();
         }

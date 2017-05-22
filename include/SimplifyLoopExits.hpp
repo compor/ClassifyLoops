@@ -5,6 +5,9 @@
 #include "llvm/Pass.h"
 // using llvm::FunctionPass
 
+#include <utility>
+#include <vector>
+
 #ifndef VERSION_STRING
 #define VERSION_STRING ""
 #endif
@@ -18,9 +21,26 @@ class Loop;
 
 namespace icsa {
 
-struct LoopExitStats {
-  static unsigned int getExits(const llvm::Loop &L);
+struct LoopStatsData {
+  LoopStatsData()
+      : NumHeaderExits(0), NumNonHeaderExits(0), NumPDomBlockExits(0),
+        NumDomBlockExits(0), NumInnerLoops(0), NumInnerLoopExits(0),
+        NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0) {}
+
+  unsigned NumHeaderExits;
+  unsigned NumNonHeaderExits;
+  unsigned NumPDomBlockExits;
+  unsigned NumDomBlockExits;
+  unsigned NumInnerLoops;
+  unsigned NumInnerLoopExits;
+  unsigned NumIOCalls;
+  unsigned NumNonLocalExits;
+  unsigned NumDiffExitLandings;
 };
+
+using LoopStats = std::pair<const llvm::Loop *, LoopStatsData>;
+
+std::vector<LoopStats> calculate(const llvm::LoopInfo &LI);
 
 struct ClassifyLoopExits : public llvm::FunctionPass {
 

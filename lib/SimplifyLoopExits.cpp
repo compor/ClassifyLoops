@@ -2,10 +2,6 @@
 //
 //
 
-#define DEBUG_TYPE "SimplifyLoopExits"
-
-#include "SimplifyLoopExits.hpp"
-
 #include "llvm/Pass.h"
 // using llvm::RegisterPass
 
@@ -44,6 +40,10 @@
 #include "llvm/Support/Debug.h"
 // using DEBUG macro
 // using llvm::dbgs
+
+#include "SimplifyLoopExits.hpp"
+
+#define DEBUG_TYPE "SimplifyLoopExits"
 
 // plugin registration for opt
 
@@ -121,11 +121,24 @@ void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   return;
 }
 
-unsigned int LoopExitStats::getExits(const llvm::Loop &L) {
-  llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
-  L.getExitingBlocks(exiting);
+std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
+  std::vector<LoopStats> stats{};
 
-  return exiting.size();
+  for (const auto &L : LI) {
+    LoopStatsData sd{};
+
+    const auto *eb = L->getExitingBlock();
+    if (eb && LI.isLoopHeader(eb))
+      sd.NumHeaderExits = 1;
+
+    llvm::SmallVector<llvm::BasicBlock *, 5> ebs;
+    L->getExitingBlocks(ebs);
+    sd.NumNonHeaderExits = ebs.size() - sd.NumHeaderExits;
+
+    stats.emplace_back(L, sd);
+  }
+
+  return stats;
 }
 
 } // namespace icsa end
