@@ -1,5 +1,7 @@
 # IDE files
 compile_commands.json
+.ycm*
+.vimrc.*
 
 # Compiled Object files
 *.slo

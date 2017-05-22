@@ -1,5 +1,5 @@
 
-# SimplifyLoopExits
+# LLVM SimplifyLoopExits opt pass
 
 Transform loop with multiple exits to use a single exit.
 
@@ -8,7 +8,7 @@ Transform loop with multiple exits to use a single exit.
 - make sure clang/clang++ is in your `$PATH`
 - `mkdir my-build-dir`
 - optionally `mkdir my-install-dir`
-- `[path to repo]/SimplifyLoopExits/utils/build.sh [path to repo]/SimplifyLoopExits [path to installation dir]`
+- `[path to repo]/utils/build.sh [path torepo] [path to installation dir]`
 - `cd my-build-dir`
 - `make`
 - optionally `make install`
@@ -33,4 +33,5 @@ Transform loop with multiple exits to use a single exit.
 ## Notes
 
 - When the build script uses LLVM's cmake utility functions the `lib` shared library prefix is omitted
+
 
