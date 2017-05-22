@@ -127,12 +127,13 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
   for (const auto &L : LI) {
     LoopStatsData sd{};
 
-    const auto *eb = L->getExitingBlock();
-    if (eb && LI.isLoopHeader(eb))
-      sd.NumHeaderExits = 1;
-
     llvm::SmallVector<llvm::BasicBlock *, 5> ebs;
     L->getExitingBlocks(ebs);
+
+    for(const auto &e : ebs)
+      if(LI.isLoopHeader(e))
+        sd.NumHeaderExits++;
+
     sd.NumNonHeaderExits = ebs.size() - sd.NumHeaderExits;
 
     stats.emplace_back(L, sd);

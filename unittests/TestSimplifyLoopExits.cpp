@@ -129,7 +129,6 @@ public:
           return false;
 
         auto &LI = getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
-        // LI.print(llvm::outs());
 
         auto &CurLoop = *LI.begin();
         assert(CurLoop && "Loop ptr is invalid");
@@ -137,14 +136,26 @@ public:
         test_result_map::const_iterator found;
 
         // subcase
-        found = lookup("number of exits");
+        found = lookup("total number of exits");
 
-        const auto &stats = calculate(LI);
-        const auto &rv =
-            stats[0].second.NumHeaderExits + stats[0].second.NumNonHeaderExits;
-        const auto &ev =
-            boost::apply_visitor(test_result_visitor(), found->second);
-        EXPECT_EQ(ev, rv) << found->first;
+        if (found != std::end(m_trm)) {
+          const auto &stats = calculate(LI);
+          const auto &rv = stats[0].second.NumHeaderExits +
+                           stats[0].second.NumNonHeaderExits;
+          const auto &ev =
+              boost::apply_visitor(test_result_visitor(), found->second);
+          EXPECT_EQ(ev, rv) << found->first;
+        }
+
+        // subcase
+        found = lookup("number of header exits");
+        if (found != std::end(m_trm)) {
+          const auto &stats = calculate(LI);
+          const auto &rv = stats[0].second.NumHeaderExits;
+          const auto &ev =
+              boost::apply_visitor(test_result_visitor(), found->second);
+          EXPECT_EQ(ev, rv) << found->first;
+        }
 
         return false;
       }
@@ -184,7 +195,8 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
   ParseAssembly("test01.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 1});
+  trm.insert({"total number of exits", 1});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
@@ -192,7 +204,8 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
   ParseAssembly("test02.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 0});
+  trm.insert({"total number of exits", 0});
+  trm.insert({"number of header exits", 0});
   ExpectTestPass(trm);
 }
 
@@ -200,7 +213,8 @@ TEST_F(TestClassifyLoopExits, DeadLoopExits) {
   ParseAssembly("test03.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 1});
+  trm.insert({"total number of exits", 1});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
@@ -208,7 +222,8 @@ TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
   ParseAssembly("test04.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 2});
+  trm.insert({"total number of exits", 2});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
@@ -216,7 +231,8 @@ TEST_F(TestClassifyLoopExits, ContinueConditionLoopExits) {
   ParseAssembly("test05.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 1});
+  trm.insert({"total number of exits", 1});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
@@ -224,7 +240,8 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
   ParseAssembly("test06.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 2});
+  trm.insert({"total number of exits", 2});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
@@ -232,7 +249,8 @@ TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
   ParseAssembly("test07.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 2});
+  trm.insert({"total number of exits", 2});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
@@ -240,7 +258,8 @@ TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
   ParseAssembly("test08.ll");
   test_result_map trm;
 
-  trm.insert({"number of exits", 1});
+  trm.insert({"total number of exits", 1});
+  trm.insert({"number of header exits", 1});
   ExpectTestPass(trm);
 }
 
