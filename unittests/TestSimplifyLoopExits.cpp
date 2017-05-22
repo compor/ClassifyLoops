@@ -157,6 +157,16 @@ public:
           EXPECT_EQ(ev, rv) << found->first;
         }
 
+        // subcase
+        found = lookup("number of inner loops");
+        if (found != std::end(m_trm)) {
+          const auto &stats = calculate(LI);
+          const auto &rv = stats[0].second.NumInnerLoops;
+          const auto &ev =
+              boost::apply_visitor(test_result_visitor(), found->second);
+          EXPECT_EQ(ev, rv) << found->first;
+        }
+
         return false;
       }
 
@@ -197,6 +207,7 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
 
   trm.insert({"total number of exits", 1});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -206,6 +217,7 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
 
   trm.insert({"total number of exits", 0});
   trm.insert({"number of header exits", 0});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -215,6 +227,7 @@ TEST_F(TestClassifyLoopExits, DeadLoopExits) {
 
   trm.insert({"total number of exits", 1});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -224,6 +237,7 @@ TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
 
   trm.insert({"total number of exits", 2});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -233,6 +247,7 @@ TEST_F(TestClassifyLoopExits, ContinueConditionLoopExits) {
 
   trm.insert({"total number of exits", 1});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -242,6 +257,7 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
 
   trm.insert({"total number of exits", 2});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -251,6 +267,7 @@ TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
 
   trm.insert({"total number of exits", 2});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 
@@ -260,6 +277,7 @@ TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
 
   trm.insert({"total number of exits", 1});
   trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 0});
   ExpectTestPass(trm);
 }
 

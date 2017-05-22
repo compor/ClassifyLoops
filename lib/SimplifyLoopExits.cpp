@@ -136,6 +136,8 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
 
     sd.NumNonHeaderExits = ebs.size() - sd.NumHeaderExits;
 
+    sd.NumInnerLoops = L->getLoopDepth() - 1;
+
     stats.emplace_back(L, sd);
   }
 
