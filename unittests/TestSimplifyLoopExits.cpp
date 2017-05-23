@@ -382,5 +382,20 @@ TEST_F(TestClassifyLoopExits, SpecialCallsLoop) {
   ExpectTestPass(trm);
 }
 
+TEST_F(TestClassifyLoopExits, RegularInnerLoops) {
+  ParseAssembly("test11.ll");
+  test_result_map trm;
+
+  trm.insert({"total number of exits", 1});
+  trm.insert({"number of header exits", 1});
+  trm.insert({"number of different exit landings", 1});
+  trm.insert({"number of inner loops", 1});
+  trm.insert({"number of inner loop exits", 1});
+  trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
+  ExpectTestPass(trm);
+}
+
 } // namespace anonymous end
 } // namespace icsa end
