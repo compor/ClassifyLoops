@@ -40,10 +40,14 @@
 // using llvm::cl::opt
 // using llvm::cl::desc
 
+#include "llvm/Support/FileSystem.h"
+// using llvm::sys::fs::OpenFlags
+
 #include "llvm/Support/Debug.h"
 // using DEBUG macro
 // using llvm::dbgs
 
+#include <fstream>
 #include <set>
 
 #include "SimplifyLoopExits.hpp"
@@ -56,6 +60,17 @@
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
 #define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
+
+static llvm::cl::opt<std::string>
+    IOFuncsFilename("classify-loops-iofuncs", llvm::cl::desc("io funcs list"));
+
+static llvm::cl::opt<std::string>
+    NLEFuncsFilename("classify-loops-nlefuncs",
+                     llvm::cl::desc("non-local exit funcs list"));
+
+static llvm::cl::opt<std::string> ReportStatsFilename(
+    "classify-loops-stats",
+    llvm::cl::desc("classify loops pass stats report filename"));
 
 namespace icsa {
 
@@ -104,7 +119,59 @@ static llvm::RegisterStandardPasses
 //
 
 bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
+  if (f.isDeclaration())
+    return false;
+
   m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+  std::set<std::string> IOFuncs;
+  std::set<std::string> NonLocalExitFuncs;
+
+  if (!IOFuncsFilename.empty()) {
+    std::ifstream IOFuncsFile{IOFuncsFilename};
+    std::string name;
+
+    if (IOFuncsFile.is_open()) {
+      while (IOFuncsFile >> name)
+        IOFuncs.insert(name);
+    } else
+      llvm::errs() << "could open file: \'" << IOFuncsFilename << "\'\n";
+  }
+
+  if (!NLEFuncsFilename.empty()) {
+    std::ifstream NLEFuncsFile{NLEFuncsFilename};
+    std::string name;
+
+    if (NLEFuncsFile.is_open()) {
+      while (NLEFuncsFile >> name)
+        NonLocalExitFuncs.insert(name);
+    } else
+      llvm::errs() << "could open file: \'" << NLEFuncsFilename << "\'\n";
+  }
+
+  const auto &loopstats = calculate(*m_LI, &IOFuncs, &NonLocalExitFuncs);
+
+  if (!ReportStatsFilename.empty()) {
+    std::error_code err;
+    llvm::raw_fd_ostream report(ReportStatsFilename, err,
+                                llvm::sys::fs::F_Text);
+
+    if (err)
+      llvm::errs() << "could not open file: \"" << ReportStatsFilename
+                   << "\" reason: " << err.message() << "\n";
+    else {
+      for (const auto &ls : loopstats) {
+        report << ls.second.NumHeaderExits << "\t";
+        report << ls.second.NumNonHeaderExits << "\t";
+        report << ls.second.NumInnerLoops << "\t";
+        report << ls.second.NumInnerLoopExits << "\t";
+        report << ls.second.NumInnerLoopTopLevelExits << "\t";
+        report << ls.second.NumIOCalls << "\t";
+        report << ls.second.NumNonLocalExits << "\t";
+        report << ls.second.NumDiffExitLandings << "\t";
+        report << "\n";
+      }
+    }
+  }
 
   return false;
 }
@@ -190,7 +257,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
           continue;
 
         const auto foundIO = IOFuncs->find(calledfunc->getName().str());
-        if(std::end(*IOFuncs) != foundIO)
+        if (std::end(*IOFuncs) != foundIO)
           sd.NumIOCalls++;
 
         if (!NonLocalExitFuncs)
@@ -198,7 +265,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 
         const auto foundNLE =
             NonLocalExitFuncs->find(calledfunc->getName().str());
-        if(std::end(*NonLocalExitFuncs) != foundNLE)
+        if (std::end(*NonLocalExitFuncs) != foundNLE)
           sd.NumNonLocalExits++;
       }
 
