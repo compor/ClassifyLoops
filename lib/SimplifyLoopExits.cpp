@@ -154,6 +154,21 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
     const auto subloops = L->getSubLoops();
     sd.NumInnerLoops = subloops.size();
 
+    std::set<llvm::BasicBlock *> uniqueInnerExiting;
+    for (const auto &innerloop : subloops) {
+      llvm::SmallVector<llvm::BasicBlock *, 5> innerExiting;
+      innerloop->getExitingBlocks(innerExiting);
+      for (const auto &e : innerExiting)
+        uniqueInnerExiting.insert(e);
+    }
+
+    sd.NumInnerLoopExits = uniqueInnerExiting.size();
+
+    for (const auto &e : uniqueInnerExiting)
+      for (auto i = 0; i < e->getTerminator()->getNumSuccessors(); ++i)
+        if (!L->contains(e->getTerminator()->getSuccessor(i)))
+          sd.NumInnerLoopTopLevelExits++;
+
     stats.emplace_back(L, sd);
   }
 

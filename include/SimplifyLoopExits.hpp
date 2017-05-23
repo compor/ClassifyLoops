@@ -25,7 +25,8 @@ struct LoopStatsData {
   LoopStatsData()
       : NumHeaderExits(0), NumNonHeaderExits(0), NumPDomBlockExits(0),
         NumDomBlockExits(0), NumInnerLoops(0), NumInnerLoopExits(0),
-        NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0) {}
+        NumInnerLoopTopLevelExits(0), NumIOCalls(0), NumNonLocalExits(0),
+        NumDiffExitLandings(0) {}
 
   unsigned NumHeaderExits;
   unsigned NumNonHeaderExits;
@@ -33,6 +34,7 @@ struct LoopStatsData {
   unsigned NumDomBlockExits;
   unsigned NumInnerLoops;
   unsigned NumInnerLoopExits;
+  unsigned NumInnerLoopTopLevelExits;
   unsigned NumIOCalls;
   unsigned NumNonLocalExits;
   unsigned NumDiffExitLandings;
