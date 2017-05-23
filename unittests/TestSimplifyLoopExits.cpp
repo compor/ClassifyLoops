@@ -299,5 +299,15 @@ TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
   ExpectTestPass(trm);
 }
 
+TEST_F(TestClassifyLoopExits, ReturnInnerLoopExits) {
+  ParseAssembly("test09.ll");
+  test_result_map trm;
+
+  trm.insert({"total number of exits", 2});
+  trm.insert({"number of header exits", 1});
+  trm.insert({"number of inner loops", 1});
+  trm.insert({"number of different exit landings", 2});
+  ExpectTestPass(trm);
+}
 } // namespace anonymous end
 } // namespace icsa end

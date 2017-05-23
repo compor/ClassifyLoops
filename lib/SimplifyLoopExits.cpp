@@ -127,13 +127,16 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
   std::vector<LoopStats> stats{};
 
   for (const auto &L : LI) {
+    if (L->getLoopDepth() > 1)
+      continue;
+
     LoopStatsData sd{};
 
     llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
     L->getExitingBlocks(exiting);
 
-    for(const auto &e : exiting)
-      if(LI.isLoopHeader(e))
+    for (const auto &e : exiting)
+      if (LI.isLoopHeader(e))
         sd.NumHeaderExits++;
 
     sd.NumNonHeaderExits = exiting.size() - sd.NumHeaderExits;
@@ -143,12 +146,13 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
     llvm::SmallVector<llvm::BasicBlock *, 5> exitLandings;
     L->getExitBlocks(exitLandings);
     std::set<llvm::BasicBlock *> uniqueExitLandings;
-    for(const auto &e : exitLandings) {
+    for (const auto &e : exitLandings)
       uniqueExitLandings.insert(e);
-      //llvm::outs() << "---" << e << "\n";
-    }
 
     sd.NumDiffExitLandings = uniqueExitLandings.size();
+
+    const auto subloops = L->getSubLoops();
+    sd.NumInnerLoops = subloops.size();
 
     stats.emplace_back(L, sd);
   }
