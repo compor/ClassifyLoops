@@ -18,6 +18,9 @@
 // using llvm::LoopInfoWrapperPass
 // using llvm::LoopInfo
 
+#include "llvm/IR/Instructions.h"
+// using llvm::CallInst
+
 #include "llvm/Support/Casting.h"
 // using llvm::dyn_cast
 
@@ -123,7 +126,9 @@ void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   return;
 }
 
-std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
+std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
+                                 std::set<std::string> *IOFuncs,
+                                 std::set<std::string> *NonLocalExitFuncs) {
   std::vector<LoopStats> stats{};
 
   for (const auto &L : LI) {
@@ -168,6 +173,34 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI) {
       for (auto i = 0; i < e->getTerminator()->getNumSuccessors(); ++i)
         if (!L->contains(e->getTerminator()->getSuccessor(i)))
           sd.NumInnerLoopTopLevelExits++;
+
+    for (const auto *bb : L->getBlocks())
+      for (const auto &inst : *bb) {
+        const auto *callinst = llvm::dyn_cast<llvm::CallInst>(&inst);
+
+        if (!callinst)
+          continue;
+
+        const auto calledfunc = callinst->getCalledFunction();
+
+        if (!calledfunc)
+          continue;
+
+        if (!IOFuncs)
+          continue;
+
+        const auto foundIO = IOFuncs->find(calledfunc->getName().str());
+        if(std::end(*IOFuncs) != foundIO)
+          sd.NumIOCalls++;
+
+        if (!NonLocalExitFuncs)
+          continue;
+
+        const auto foundNLE =
+            NonLocalExitFuncs->find(calledfunc->getName().str());
+        if(std::end(*NonLocalExitFuncs) != foundNLE)
+          sd.NumNonLocalExits++;
+      }
 
     stats.emplace_back(L, sd);
   }

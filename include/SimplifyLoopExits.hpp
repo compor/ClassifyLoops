@@ -5,7 +5,9 @@
 #include "llvm/Pass.h"
 // using llvm::FunctionPass
 
+#include <string>
 #include <utility>
+#include <set>
 #include <vector>
 
 #ifndef VERSION_STRING
@@ -23,15 +25,12 @@ namespace icsa {
 
 struct LoopStatsData {
   LoopStatsData()
-      : NumHeaderExits(0), NumNonHeaderExits(0), NumPDomBlockExits(0),
-        NumDomBlockExits(0), NumInnerLoops(0), NumInnerLoopExits(0),
-        NumInnerLoopTopLevelExits(0), NumIOCalls(0), NumNonLocalExits(0),
-        NumDiffExitLandings(0) {}
+      : NumHeaderExits(0), NumNonHeaderExits(0), NumInnerLoops(0),
+        NumInnerLoopExits(0), NumInnerLoopTopLevelExits(0), NumIOCalls(0),
+        NumNonLocalExits(0), NumDiffExitLandings(0) {}
 
   unsigned NumHeaderExits;
   unsigned NumNonHeaderExits;
-  unsigned NumPDomBlockExits;
-  unsigned NumDomBlockExits;
   unsigned NumInnerLoops;
   unsigned NumInnerLoopExits;
   unsigned NumInnerLoopTopLevelExits;
@@ -42,7 +41,9 @@ struct LoopStatsData {
 
 using LoopStats = std::pair<const llvm::Loop *, LoopStatsData>;
 
-std::vector<LoopStats> calculate(const llvm::LoopInfo &LI);
+std::vector<LoopStats>
+calculate(const llvm::LoopInfo &LI, std::set<std::string> *IOFuncs = nullptr,
+          std::set<std::string> *NonLocalExitFuncs = nullptr);
 
 struct ClassifyLoopExits : public llvm::FunctionPass {
 

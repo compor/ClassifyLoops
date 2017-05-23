@@ -135,9 +135,15 @@ public:
 
         test_result_map::const_iterator found;
 
+        std::set<std::string> iocalls;
+        std::set<std::string> nonlocalexitcalls;
+
+        iocalls.insert("foo");
+        nonlocalexitcalls.insert("bar");
+
         // subcase
         found = lookup("total number of exits");
-        const auto &stats = calculate(LI);
+        const auto &stats = calculate(LI, &iocalls, &nonlocalexitcalls);
 
         if (found != std::end(m_trm)) {
           const auto &rv = stats[0].second.NumHeaderExits +
@@ -187,6 +193,24 @@ public:
         found = lookup("number of inner loop toplevel exits");
         if (found != std::end(m_trm)) {
           const auto &rv = stats[0].second.NumInnerLoopTopLevelExits;
+          const auto &ev =
+              boost::apply_visitor(test_result_visitor(), found->second);
+          EXPECT_EQ(ev, rv) << found->first;
+        }
+
+        // subcase
+        found = lookup("number of IO calls");
+        if (found != std::end(m_trm)) {
+          const auto &rv = stats[0].second.NumIOCalls;
+          const auto &ev =
+              boost::apply_visitor(test_result_visitor(), found->second);
+          EXPECT_EQ(ev, rv) << found->first;
+        }
+
+        // subcase
+        found = lookup("number of non local exit calls");
+        if (found != std::end(m_trm)) {
+          const auto &rv = stats[0].second.NumNonLocalExits;
           const auto &ev =
               boost::apply_visitor(test_result_visitor(), found->second);
           EXPECT_EQ(ev, rv) << found->first;
@@ -342,5 +366,21 @@ TEST_F(TestClassifyLoopExits, ReturnInnerLoopExits) {
   trm.insert({"number of inner loop toplevel exits", 1});
   ExpectTestPass(trm);
 }
+
+TEST_F(TestClassifyLoopExits, SpecialCallsLoop) {
+  ParseAssembly("test10.ll");
+  test_result_map trm;
+
+  trm.insert({"total number of exits", 1});
+  trm.insert({"number of header exits", 1});
+  trm.insert({"number of different exit landings", 1});
+  trm.insert({"number of inner loops", 0});
+  trm.insert({"number of inner loop exits", 0});
+  trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 1});
+  trm.insert({"number of non local exit calls", 1});
+  ExpectTestPass(trm);
+}
+
 } // namespace anonymous end
 } // namespace icsa end
