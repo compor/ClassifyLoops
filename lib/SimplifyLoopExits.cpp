@@ -108,7 +108,7 @@ static llvm::RegisterStandardPasses
 //
 
 static void registerClassifyLoops(const llvm::PassManagerBuilder &Builder,
-                                      llvm::legacy::PassManagerBase &PM) {
+                                  llvm::legacy::PassManagerBase &PM) {
   PM.add(new ClassifyLoops());
 
   return;
@@ -116,7 +116,7 @@ static void registerClassifyLoops(const llvm::PassManagerBuilder &Builder,
 
 static llvm::RegisterStandardPasses
     RegisterClassifyLoops(llvm::PassManagerBuilder::EP_EarlyAsPossible,
-                              registerClassifyLoops);
+                          registerClassifyLoops);
 
 //
 
@@ -223,12 +223,10 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
     L->getExitingBlocks(exiting);
 
     for (const auto &e : exiting)
-      if (LI.isLoopHeader(e))
+      if (L->getHeader() == e)
         sd.NumHeaderExits++;
 
     sd.NumNonHeaderExits = exiting.size() - sd.NumHeaderExits;
-
-    sd.NumInnerLoops = L->getLoopDepth() - 1;
 
     llvm::SmallVector<llvm::BasicBlock *, 5> exitLandings;
     L->getExitBlocks(exitLandings);
