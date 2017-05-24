@@ -274,6 +274,8 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
@@ -287,6 +289,8 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
@@ -313,6 +317,8 @@ TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
   trm.insert({"number of different exit landings", 2});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
@@ -339,6 +345,8 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
@@ -352,6 +360,8 @@ TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
@@ -365,6 +375,8 @@ TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
@@ -378,6 +390,8 @@ TEST_F(TestClassifyLoopExits, ReturnInnerLoopExits) {
   trm.insert({"number of inner loops", 1});
   trm.insert({"number of inner loop exits", 2});
   trm.insert({"number of inner loop toplevel exits", 1});
+  trm.insert({"number of IO calls", 0});
+  trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
 
