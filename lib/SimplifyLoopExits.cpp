@@ -11,6 +11,9 @@
 #include "llvm/IR/Instruction.h"
 // using llvm::Instruction
 
+#include "llvm/IR/Module.h"
+// using llvm::Module
+
 #include "llvm/IR/Function.h"
 // using llvm::Function
 
@@ -118,11 +121,7 @@ static llvm::RegisterStandardPasses
 
 //
 
-bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
-  if (f.isDeclaration())
-    return false;
-
-  m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>().getLoopInfo();
+bool ClassifyLoopExits::runOnModule(llvm::Module &CurModule) {
   std::set<std::string> IOFuncs;
   std::set<std::string> NonLocalExitFuncs;
 
@@ -148,7 +147,18 @@ bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
       llvm::errs() << "could open file: \'" << NLEFuncsFilename << "\'\n";
   }
 
-  const auto &loopstats = calculate(*m_LI, &IOFuncs, &NonLocalExitFuncs);
+  std::vector<LoopStats> totalLoopStats;
+
+  for (auto &curFunc : CurModule) {
+    if (curFunc.isDeclaration())
+      continue;
+
+    m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>(curFunc).getLoopInfo();
+
+    const auto &loopstats = calculate(*m_LI, &IOFuncs, &NonLocalExitFuncs);
+    totalLoopStats.insert(totalLoopStats.end(), loopstats.begin(),
+                          loopstats.end());
+  }
 
   if (!ReportStatsFilename.empty()) {
     std::error_code err;
@@ -159,7 +169,7 @@ bool ClassifyLoopExits::runOnFunction(llvm::Function &f) {
       llvm::errs() << "could not open file: \"" << ReportStatsFilename
                    << "\" reason: " << err.message() << "\n";
     else {
-      for (const auto &ls : loopstats) {
+      for (const auto &ls : totalLoopStats) {
         report << ls.second.NumHeaderExits << "\t";
         report << ls.second.NumNonHeaderExits << "\t";
         report << ls.second.NumInnerLoops << "\t";
