@@ -64,10 +64,10 @@
 
 #define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
 
-static llvm::cl::opt<std::string>
+static llvm::cl::list<std::string>
     IOFuncsFilename("classify-loops-iofuncs", llvm::cl::desc("io funcs list"));
 
-static llvm::cl::opt<std::string>
+static llvm::cl::list<std::string>
     NLEFuncsFilename("classify-loops-nlefuncs",
                      llvm::cl::desc("non-local exit funcs list"));
 
@@ -82,10 +82,9 @@ static llvm::RegisterPass<SimplifyLoopExits>
     tmp1("simplifyloopexits", PRJ_CMDLINE_STRING("simplify loop exits"), false,
          false);
 
-char ClassifyLoopExits::ID = 0;
-static llvm::RegisterPass<ClassifyLoopExits>
-    tmp2("classifyloopexits", PRJ_CMDLINE_STRING("classify loop exits"), false,
-         false);
+char ClassifyLoops::ID = 0;
+static llvm::RegisterPass<ClassifyLoops>
+    tmp2("classify-loops", PRJ_CMDLINE_STRING("classify loop"), false, false);
 
 // plugin registration for clang
 
@@ -108,43 +107,44 @@ static llvm::RegisterStandardPasses
 
 //
 
-static void registerClassifyLoopExits(const llvm::PassManagerBuilder &Builder,
+static void registerClassifyLoops(const llvm::PassManagerBuilder &Builder,
                                       llvm::legacy::PassManagerBase &PM) {
-  PM.add(new ClassifyLoopExits());
+  PM.add(new ClassifyLoops());
 
   return;
 }
 
 static llvm::RegisterStandardPasses
-    RegisterClassifyLoopExits(llvm::PassManagerBuilder::EP_EarlyAsPossible,
-                              registerClassifyLoopExits);
+    RegisterClassifyLoops(llvm::PassManagerBuilder::EP_EarlyAsPossible,
+                              registerClassifyLoops);
 
 //
 
-bool ClassifyLoopExits::runOnModule(llvm::Module &CurModule) {
+bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
   std::set<std::string> IOFuncs;
   std::set<std::string> NonLocalExitFuncs;
 
-  if (!IOFuncsFilename.empty()) {
-    std::ifstream IOFuncsFile{IOFuncsFilename};
+  // if (!IOFuncsFilename.empty()) {
+  for (const auto &file : IOFuncsFilename) {
+    std::ifstream IOFuncsFile{file};
     std::string name;
 
     if (IOFuncsFile.is_open()) {
       while (IOFuncsFile >> name)
         IOFuncs.insert(name);
     } else
-      llvm::errs() << "could open file: \'" << IOFuncsFilename << "\'\n";
+      llvm::errs() << "could open file: \'" << file << "\'\n";
   }
 
-  if (!NLEFuncsFilename.empty()) {
-    std::ifstream NLEFuncsFile{NLEFuncsFilename};
+  for (const auto &file : NLEFuncsFilename) {
+    std::ifstream NLEFuncsFile{file};
     std::string name;
 
     if (NLEFuncsFile.is_open()) {
       while (NLEFuncsFile >> name)
         NonLocalExitFuncs.insert(name);
     } else
-      llvm::errs() << "could open file: \'" << NLEFuncsFilename << "\'\n";
+      llvm::errs() << "could open file: \'" << file << "\'\n";
   }
 
   std::vector<LoopStats> totalLoopStats;
@@ -187,7 +187,7 @@ bool ClassifyLoopExits::runOnModule(llvm::Module &CurModule) {
   return false;
 }
 
-void ClassifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
+void ClassifyLoops::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
 
@@ -216,7 +216,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
     LoopStatsData sd{};
 
     const auto *containingFunc = L->getHeader()->getParent();
-    if(containingFunc->hasName())
+    if (containingFunc->hasName())
       sd.ContainingFunc = containingFunc->getName();
 
     llvm::SmallVector<llvm::BasicBlock *, 5> exiting;

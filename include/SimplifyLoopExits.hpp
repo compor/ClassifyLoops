@@ -46,11 +46,11 @@ std::vector<LoopStats>
 calculate(const llvm::LoopInfo &LI, std::set<std::string> *IOFuncs = nullptr,
           std::set<std::string> *NonLocalExitFuncs = nullptr);
 
-struct ClassifyLoopExits : public llvm::ModulePass {
+struct ClassifyLoops : public llvm::ModulePass {
 
   static char ID;
 
-  ClassifyLoopExits() : llvm::ModulePass(ID) {}
+  ClassifyLoops() : llvm::ModulePass(ID) {}
 
   bool runOnModule(llvm::Module &CurModule) override;
   void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;

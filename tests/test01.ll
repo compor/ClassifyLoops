@@ -1,4 +1,4 @@
-; RUN: opt -load %bindir/%testeelib -classifyloopexits -classify-loops-stats=%t -S < %s
+; RUN: opt -load %bindir/%testeelib -classify-loops -classify-loops-stats=%t -S < %s
 ; RUN: diff -b %outputdatadir/test01-report.txt %t
 
 define void @test() {
