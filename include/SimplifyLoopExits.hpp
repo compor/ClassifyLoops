@@ -25,10 +25,11 @@ namespace icsa {
 
 struct LoopStatsData {
   LoopStatsData()
-      : NumHeaderExits(0), NumNonHeaderExits(0), NumInnerLoops(0),
-        NumInnerLoopExits(0), NumInnerLoopTopLevelExits(0), NumIOCalls(0),
-        NumNonLocalExits(0), NumDiffExitLandings(0) {}
+      : ContainingFunc{"-"}, NumHeaderExits(0), NumNonHeaderExits(0),
+        NumInnerLoops(0), NumInnerLoopExits(0), NumInnerLoopTopLevelExits(0),
+        NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0) {}
 
+  std::string ContainingFunc;
   unsigned NumHeaderExits;
   unsigned NumNonHeaderExits;
   unsigned NumInnerLoops;

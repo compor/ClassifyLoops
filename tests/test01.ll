@@ -1,5 +1,5 @@
 ; RUN: opt -load %bindir/%testeelib -classifyloopexits -classify-loops-stats=%t -S < %s
-; RUN: diff %outputdatadir/test01-report.txt %t
+; RUN: diff -b %outputdatadir/test01-report.txt %t
 
 define void @test() {
   %i = alloca i32, align 4

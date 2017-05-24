@@ -49,17 +49,22 @@
 #include "boost/variant.hpp"
 // using boost::variant
 
+#include <string>
+
 #include "SimplifyLoopExits.hpp"
 
 namespace icsa {
 namespace {
 
-using test_result_t = boost::variant<bool, int>;
+using test_result_t = boost::variant<bool, int, std::string>;
 using test_result_map = std::map<std::string, test_result_t>;
 
 struct test_result_visitor : public boost::static_visitor<unsigned int> {
   unsigned int operator()(bool b) const { return b ? 1 : 0; }
   unsigned int operator()(int i) const { return i; }
+  unsigned int operator()(const std::string &s) const {
+    return s == "test" ? 1 : 0;
+  }
 };
 
 class TestClassifyLoopExits : public testing::Test {
@@ -141,10 +146,19 @@ public:
         iocalls.insert("foo");
         nonlocalexitcalls.insert("bar");
 
-        // subcase
-        found = lookup("total number of exits");
         const auto &stats = calculate(LI, &iocalls, &nonlocalexitcalls);
 
+        // subcase
+        found = lookup("containing function");
+        if (found != std::end(m_trm)) {
+          const auto &rv = (stats[0].second.ContainingFunc == "test") ? 1 : 0;
+          const auto &ev =
+              boost::apply_visitor(test_result_visitor(), found->second);
+          EXPECT_EQ(ev, rv) << found->first;
+        }
+
+        // subcase
+        found = lookup("total number of exits");
         if (found != std::end(m_trm)) {
           const auto &rv = stats[0].second.NumHeaderExits +
                            stats[0].second.NumNonHeaderExits;

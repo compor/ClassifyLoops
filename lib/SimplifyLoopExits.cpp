@@ -170,6 +170,7 @@ bool ClassifyLoopExits::runOnModule(llvm::Module &CurModule) {
                    << "\" reason: " << err.message() << "\n";
     else {
       for (const auto &ls : totalLoopStats) {
+        report << ls.second.ContainingFunc << "\t";
         report << ls.second.NumHeaderExits << "\t";
         report << ls.second.NumNonHeaderExits << "\t";
         report << ls.second.NumInnerLoops << "\t";
@@ -213,6 +214,10 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
       continue;
 
     LoopStatsData sd{};
+
+    const auto *containingFunc = L->getHeader()->getParent();
+    if(containingFunc->hasName())
+      sd.ContainingFunc = containingFunc->getName();
 
     llvm::SmallVector<llvm::BasicBlock *, 5> exiting;
     L->getExitingBlocks(exiting);
