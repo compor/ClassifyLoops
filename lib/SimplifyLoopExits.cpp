@@ -56,6 +56,8 @@
 #include <set>
 // using std::set
 
+#include "BWList.hpp"
+
 #include "SimplifyLoopExits.hpp"
 
 #define DEBUG_TYPE "SimplifyLoopExits"
@@ -66,6 +68,10 @@
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
 #define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
+
+static llvm::cl::opt<std::string>
+    FuncWhileListFilename("classify-loops-fn-whitelist",
+                          llvm::cl::desc("function whitelist"));
 
 static llvm::cl::list<std::string>
     IOFuncsFilename("classify-loops-iofuncs", llvm::cl::desc("io funcs list"));
@@ -150,9 +156,24 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
       llvm::errs() << "could open file: \'" << file << "\'\n";
   }
 
+  BWList funcWhileList;
+  if (!FuncWhileListFilename.empty()) {
+    std::ifstream funcWhiteListFile{FuncWhileListFilename};
+
+    if (funcWhiteListFile.is_open()) {
+      funcWhileList.addRegex(funcWhiteListFile);
+      funcWhiteListFile.close();
+    } else
+      llvm::errs() << "could open file: \'" << FuncWhileListFilename << "\'\n";
+  }
+
   std::vector<LoopStats> totalLoopStats;
 
   for (auto &curFunc : CurModule) {
+    if (!FuncWhileListFilename.empty() &&
+        !funcWhileList.matches(curFunc.getName().data()))
+      continue;
+
     if (curFunc.isDeclaration())
       continue;
 
