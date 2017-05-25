@@ -51,7 +51,10 @@
 // using llvm::dbgs
 
 #include <fstream>
+// using std::ifstream
+
 #include <set>
+// using std::set
 
 #include "SimplifyLoopExits.hpp"
 
@@ -153,9 +156,19 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
     if (curFunc.isDeclaration())
       continue;
 
-    m_LI = &getAnalysis<llvm::LoopInfoWrapperPass>(curFunc).getLoopInfo();
+    const auto *LI =
+        &getAnalysis<llvm::LoopInfoWrapperPass>(curFunc).getLoopInfo();
+#ifdef HAS_ITERWORK
+    const auto *DLP = &getAnalysis<DecoupleLoopsPass>(curFunc);
+#endif // HAS_ITERWORK
 
-    const auto &loopstats = calculate(*m_LI, &IOFuncs, &NonLocalExitFuncs);
+    const auto &loopstats = calculate(*LI, &IOFuncs, &NonLocalExitFuncs
+#ifdef HAS_ITERWORK
+                                      ,
+                                      DLP
+#endif // HAS_ITERWORK
+                                      );
+
     totalLoopStats.insert(totalLoopStats.end(), loopstats.begin(),
                           loopstats.end());
   }
@@ -179,6 +192,7 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
         report << ls.second.NumIOCalls << "\t";
         report << ls.second.NumNonLocalExits << "\t";
         report << ls.second.NumDiffExitLandings << "\t";
+        report << ls.second.HasIteratorSeparableWork << "\t";
         report << "\n";
       }
     }
@@ -190,6 +204,9 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
 void ClassifyLoops::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
+#ifdef HAS_ITERWORK
+  AU.addRequired<DecoupleLoopsPass>();
+#endif // HAS_ITERWORK
 
   return;
 }
@@ -205,8 +222,13 @@ void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 }
 
 std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
-                                 std::set<std::string> *IOFuncs,
-                                 std::set<std::string> *NonLocalExitFuncs) {
+                                 const std::set<std::string> *IOFuncs,
+                                 const std::set<std::string> *NonLocalExitFuncs
+#ifdef HAS_ITERWORK
+                                 ,
+                                 const DecoupleLoopsPass *DLP
+#endif // HAS_ITERWORK
+                                 ) {
   std::vector<LoopStats> stats{};
 
   for (const auto &L : LI) {
@@ -281,6 +303,11 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
         if (std::end(*NonLocalExitFuncs) != foundNLE)
           sd.NumNonLocalExits++;
       }
+
+#ifdef HAS_ITERWORK
+    if (DLP)
+      sd.HasIteratorSeparableWork = DLP->hasWork(L);
+#endif // HAS_ITERWORK
 
     stats.emplace_back(L, sd);
   }

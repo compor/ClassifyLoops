@@ -1,4 +1,3 @@
 # cmake file
 
 include(${CMAKE_CURRENT_LIST_DIR}/@PRJ_NAME@.cmake)
-

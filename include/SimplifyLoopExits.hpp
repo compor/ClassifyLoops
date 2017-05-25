@@ -10,6 +10,11 @@
 #include <set>
 #include <vector>
 
+#ifdef HAS_ITERWORK
+#include "DecoupleLoops.h"
+using icsa::DecoupleLoopsPass;
+#endif // HAS_ITERWORK
+
 #ifndef VERSION_STRING
 #define VERSION_STRING ""
 #endif
@@ -27,7 +32,8 @@ struct LoopStatsData {
   LoopStatsData()
       : ContainingFunc{"-"}, NumHeaderExits(0), NumNonHeaderExits(0),
         NumInnerLoops(0), NumInnerLoopExits(0), NumInnerLoopTopLevelExits(0),
-        NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0) {}
+        NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0),
+        HasIteratorSeparableWork(0) {}
 
   std::string ContainingFunc;
   unsigned NumHeaderExits;
@@ -38,13 +44,20 @@ struct LoopStatsData {
   unsigned NumIOCalls;
   unsigned NumNonLocalExits;
   unsigned NumDiffExitLandings;
+  unsigned HasIteratorSeparableWork;
 };
 
 using LoopStats = std::pair<const llvm::Loop *, LoopStatsData>;
 
 std::vector<LoopStats>
-calculate(const llvm::LoopInfo &LI, std::set<std::string> *IOFuncs = nullptr,
-          std::set<std::string> *NonLocalExitFuncs = nullptr);
+calculate(const llvm::LoopInfo &LI,
+          const std::set<std::string> *IOFuncs = nullptr,
+          const std::set<std::string> *NonLocalExitFuncs = nullptr
+#ifdef HAS_ITERWORK
+          ,
+          const DecoupleLoopsPass *DLP = nullptr
+#endif // HAS_ITERWORK
+          );
 
 struct ClassifyLoops : public llvm::ModulePass {
 
@@ -55,7 +68,7 @@ struct ClassifyLoops : public llvm::ModulePass {
   bool runOnModule(llvm::Module &CurModule) override;
   void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
 
-  llvm::LoopInfo *m_LI;
+  // llvm::LoopInfo *m_LI;
 };
 
 //
