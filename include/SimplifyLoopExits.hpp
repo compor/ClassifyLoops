@@ -52,7 +52,8 @@ using LoopStats = std::pair<const llvm::Loop *, LoopStatsData>;
 std::vector<LoopStats>
 calculate(const llvm::LoopInfo &LI,
           const std::set<std::string> *IOFuncs = nullptr,
-          const std::set<std::string> *NonLocalExitFuncs = nullptr
+          const std::set<std::string> *NonLocalExitFuncs = nullptr,
+          const llvm::TargetLibraryInfo *TLI = nullptr
 #ifdef HAS_ITERWORK
           ,
           const DecoupleLoopsPass *DLP = nullptr

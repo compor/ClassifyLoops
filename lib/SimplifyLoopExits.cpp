@@ -27,6 +27,9 @@
 #include "llvm/Support/Casting.h"
 // using llvm::dyn_cast
 
+#include "llvm/Analysis/TargetLibraryInfo.h"
+// using llvm::TargetLibraryInfoWrapperPass
+
 #include "llvm/IR/LegacyPassManager.h"
 // using llvm::PassManagerBase
 
@@ -57,6 +60,8 @@
 // using std::set
 
 #include "BWList.hpp"
+
+#include "ApplyIOAttribute.hpp"
 
 #include "SimplifyLoopExits.hpp"
 
@@ -183,7 +188,8 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
     const auto *DLP = &getAnalysis<DecoupleLoopsPass>(curFunc);
 #endif // HAS_ITERWORK
 
-    const auto &loopstats = calculate(*LI, &IOFuncs, &NonLocalExitFuncs
+    const auto &TLI = getAnalysis<llvm::TargetLibraryInfoWrapperPass>().getTLI();
+    const auto &loopstats = calculate(*LI, &IOFuncs, &NonLocalExitFuncs, &TLI
 #ifdef HAS_ITERWORK
                                       ,
                                       DLP
@@ -224,7 +230,10 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
 
 void ClassifyLoops::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   AU.setPreservesAll();
+  AU.setPreservesCFG();
   AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
+  // TODO surround with pp defs
+  AU.addRequired<llvm::TargetLibraryInfoWrapperPass>();
 #ifdef HAS_ITERWORK
   AU.addRequired<DecoupleLoopsPass>();
 #endif // HAS_ITERWORK
@@ -244,7 +253,8 @@ void SimplifyLoopExits::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
 
 std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
                                  const std::set<std::string> *IOFuncs,
-                                 const std::set<std::string> *NonLocalExitFuncs
+                                 const std::set<std::string> *NonLocalExitFuncs,
+                                 const llvm::TargetLibraryInfo *TLI
 #ifdef HAS_ITERWORK
                                  ,
                                  const DecoupleLoopsPass *DLP
@@ -284,7 +294,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 
     std::set<llvm::BasicBlock *> uniqueInnerExiting;
     for (const auto &innerloop : subloops) {
-      llvm::SmallVector<llvm::BasicBlock *, 5> innerExiting;
+      llvm::SmallVector<llvm::BasicBlock *, 6> innerExiting;
       innerloop->getExitingBlocks(innerExiting);
       for (const auto &e : innerExiting)
         uniqueInnerExiting.insert(e);
@@ -305,6 +315,13 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
           continue;
 
         const auto calledfunc = callinst->getCalledFunction();
+
+        // TODO hoist object creation out of loop
+        // TODO convert count to simple bool and exit early if true
+        if (TLI) {
+          ApplyIOAttribute aioattr(*TLI);
+          sd.NumIOCalls += aioattr.hasIO(*L) ? 1 : 0;
+        }
 
         if (!calledfunc)
           continue;

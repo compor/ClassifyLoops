@@ -86,7 +86,17 @@ if(PRJ_STANDALONE_BUILD)
     "${CMAKE_MODULE_LINKER_FLAGS} ${PRJ_LINKER_FLAGS}")
 endif()
 
-#
+
+# dependencies
+
+find_package(ApplyIOAttribute CONFIG)
+
+if(ApplyIOAttribute_FOUND)
+  get_target_property(AIOATTR_LIB_LOCATION LLVMApplyIOAttributePass LOCATION)
+else()
+  message(WARNING "package ApplyIOAttribute was not found; skipping.")
+endif()
+
 
 if(IS_DIRECTORY ${DECOUPLE_LOOPS_ROOT_DIR})
   message(STATUS "Found DecoupleLoops root directory: ${DECOUPLE_LOOPS_ROOT_DIR}")
@@ -121,6 +131,10 @@ endif()
 
 #llvm_map_components_to_libnames(llvm_libs core support analysis ipo passes)
 #target_link_libraries(${LIB_NAME} PUBLIC ${llvm_libs})
+
+if(ApplyIOAttribute_FOUND)
+  target_link_libraries(${LIB_NAME} PUBLIC LLVMApplyIOAttributePass)
+endif()
 
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
 target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})
