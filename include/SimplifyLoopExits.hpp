@@ -15,10 +15,6 @@
 using icsa::DecoupleLoopsPass;
 #endif // HAS_ITERWORK
 
-#ifndef VERSION_STRING
-#define VERSION_STRING ""
-#endif
-
 namespace llvm {
 class Function;
 class AnalysisUsage;

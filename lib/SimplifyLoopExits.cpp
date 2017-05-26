@@ -61,9 +61,11 @@
 
 #include "BWList.hpp"
 
-#include "ApplyIOAttribute.hpp"
-
 #include "SimplifyLoopExits.hpp"
+
+#ifdef USE_APPLYIOATTRIBUTE
+#include "ApplyIOAttribute.hpp"
+#endif // USE_APPLYIOATTRIBUTE
 
 #define DEBUG_TYPE "SimplifyLoopExits"
 
@@ -73,6 +75,7 @@
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
 #define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
+#undef VERSION_STRING
 
 static llvm::cl::opt<std::string>
     FuncWhileListFilename("classify-loops-fn-whitelist",
@@ -188,7 +191,8 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
     const auto *DLP = &getAnalysis<DecoupleLoopsPass>(curFunc);
 #endif // HAS_ITERWORK
 
-    const auto &TLI = getAnalysis<llvm::TargetLibraryInfoWrapperPass>().getTLI();
+    const auto &TLI =
+        getAnalysis<llvm::TargetLibraryInfoWrapperPass>().getTLI();
     const auto &loopstats = calculate(*LI, &IOFuncs, &NonLocalExitFuncs, &TLI
 #ifdef HAS_ITERWORK
                                       ,
@@ -232,8 +236,9 @@ void ClassifyLoops::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.setPreservesCFG();
   AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
-  // TODO surround with pp defs
+#ifdef USE_APPLYIOATTRIBUTE
   AU.addRequired<llvm::TargetLibraryInfoWrapperPass>();
+#endif // USE_APPLYIOATTRIBUTE
 #ifdef HAS_ITERWORK
   AU.addRequired<DecoupleLoopsPass>();
 #endif // HAS_ITERWORK
@@ -316,12 +321,13 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 
         const auto calledfunc = callinst->getCalledFunction();
 
-        // TODO hoist object creation out of loop
-        // TODO convert count to simple bool and exit early if true
+// TODO convert count to simple bool and exit early if true
+#ifdef USE_APPLYIOATTRIBUTE
         if (TLI) {
           ApplyIOAttribute aioattr(*TLI);
           sd.NumIOCalls += aioattr.hasIO(*L) ? 1 : 0;
         }
+#endif // USE_APPLYIOATTRIBUTE
 
         if (!calledfunc)
           continue;

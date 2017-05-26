@@ -139,6 +139,10 @@ endif()
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
 target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})
 
+if(ApplyIOAttribute_FOUND)
+  target_compile_definitions(${LIB_NAME} PUBLIC USE_APPLYIOATTRIBUTE)
+endif()
+
 if(DECOUPLE_LOOPS_FOUND)
   target_compile_definitions(${LIB_NAME} PUBLIC HAS_ITERWORK)
 endif()
