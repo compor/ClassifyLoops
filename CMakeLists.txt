@@ -98,6 +98,15 @@ else()
 endif()
 
 
+find_package(AnnotateLoops CONFIG)
+
+if(NOT AnnotateLoops_FOUND)
+  message(WARNING "package AnnotateLoops was not found; skipping.")
+
+  return()
+endif()
+
+
 if(IS_DIRECTORY ${DECOUPLE_LOOPS_ROOT_DIR})
   message(STATUS "Found DecoupleLoops root directory: ${DECOUPLE_LOOPS_ROOT_DIR}")
   set(DECOUPLE_LOOPS_FOUND ON)
@@ -136,11 +145,19 @@ if(ApplyIOAttribute_FOUND)
   target_link_libraries(${LIB_NAME} PUBLIC LLVMApplyIOAttributePass)
 endif()
 
+if(AnnotateLoops_FOUND)
+  target_link_libraries(${LIB_NAME} PUBLIC LLVMAnnotateLoopsPass)
+endif()
+
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
-target_compile_definitions(${LIB_NAME} PUBLIC VERSION_STRING=${PRJ_VERSION})
+target_compile_definitions(${LIB_NAME} PRIVATE VERSION_STRING=${PRJ_VERSION})
 
 if(ApplyIOAttribute_FOUND)
   target_compile_definitions(${LIB_NAME} PUBLIC USE_APPLYIOATTRIBUTE)
+endif()
+
+if(AnnotateLoops_FOUND)
+  target_compile_definitions(${LIB_NAME} PUBLIC USE_ANNOTATELOOPS)
 endif()
 
 if(DECOUPLE_LOOPS_FOUND)

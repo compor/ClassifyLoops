@@ -59,6 +59,8 @@
 #include <set>
 // using std::set
 
+#include "Config.hpp"
+
 #include "BWList.hpp"
 
 #include "SimplifyLoopExits.hpp"
@@ -67,15 +69,19 @@
 #include "ApplyIOAttribute.hpp"
 #endif // USE_APPLYIOATTRIBUTE
 
-#define DEBUG_TYPE "SimplifyLoopExits"
+#ifdef USE_ANNOTATELOOPS
+#include "AnnotateLoops.hpp"
+#endif // USE_ANNOTATELOOPS
+
+#define DEBUG_TYPE "simplify-loop-exits"
 
 // plugin registration for opt
 
 #define STRINGIFY_UTIL(x) #x
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
-#define PRJ_CMDLINE_STRING(x) x " (version: " STRINGIFY(VERSION_STRING) ")"
-#undef VERSION_STRING
+#define PRJ_CMDLINE_DESC(x)                                                    \
+  x " (version: " STRINGIFY(SIMPLIFYLOOPEXITS_VERSION) ")"
 
 static llvm::cl::opt<std::string>
     FuncWhileListFilename("classify-loops-fn-whitelist",
@@ -96,12 +102,12 @@ namespace icsa {
 
 char SimplifyLoopExits::ID = 0;
 static llvm::RegisterPass<SimplifyLoopExits>
-    tmp1("simplifyloopexits", PRJ_CMDLINE_STRING("simplify loop exits"), false,
+    tmp1("simplifyloopexits", PRJ_CMDLINE_DESC("simplify loop exits"), false,
          false);
 
 char ClassifyLoops::ID = 0;
 static llvm::RegisterPass<ClassifyLoops>
-    tmp2("classify-loops", PRJ_CMDLINE_STRING("classify loop"), false, false);
+    tmp2("classify-loops", PRJ_CMDLINE_DESC("classify loop"), false, false);
 
 // plugin registration for clang
 
@@ -266,6 +272,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 #endif // HAS_ITERWORK
                                  ) {
   std::vector<LoopStats> stats{};
+  const AnnotateLoops annotateQuery;
 
   for (const auto &L : LI) {
     if (L->getLoopDepth() > 1)

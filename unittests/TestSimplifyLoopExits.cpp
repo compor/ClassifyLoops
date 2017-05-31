@@ -50,6 +50,7 @@
 // using boost::variant
 
 #include <string>
+// using std::string
 
 #include "SimplifyLoopExits.hpp"
 
