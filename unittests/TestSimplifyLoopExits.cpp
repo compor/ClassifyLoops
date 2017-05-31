@@ -214,9 +214,9 @@ public:
         }
 
         // subcase
-        found = lookup("number of IO calls");
+        found = lookup("has IO calls");
         if (found != std::end(m_trm)) {
-          const auto &rv = stats[0].second.NumIOCalls;
+          const auto &rv = stats[0].second.HasIOCalls;
           const auto &ev =
               boost::apply_visitor(test_result_visitor(), found->second);
           EXPECT_EQ(ev, rv) << found->first;
@@ -275,7 +275,7 @@ TEST_F(TestClassifyLoopExits, RegularLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -290,7 +290,7 @@ TEST_F(TestClassifyLoopExits, DefiniteInfiniteLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -318,7 +318,7 @@ TEST_F(TestClassifyLoopExits, BreakConditionLoopExits) {
   trm.insert({"number of different exit landings", 2});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -346,7 +346,7 @@ TEST_F(TestClassifyLoopExits, ReturnStmtLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -361,7 +361,7 @@ TEST_F(TestClassifyLoopExits, ExitCallLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -376,7 +376,7 @@ TEST_F(TestClassifyLoopExits, FuncCallLoopExits) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -391,7 +391,7 @@ TEST_F(TestClassifyLoopExits, ReturnInnerLoopExits) {
   trm.insert({"number of inner loops", 1});
   trm.insert({"number of inner loop exits", 2});
   trm.insert({"number of inner loop toplevel exits", 1});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }
@@ -406,7 +406,7 @@ TEST_F(TestClassifyLoopExits, SpecialCallsLoop) {
   trm.insert({"number of inner loops", 0});
   trm.insert({"number of inner loop exits", 0});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 1});
+  trm.insert({"has IO calls", true});
   trm.insert({"number of non local exit calls", 1});
   ExpectTestPass(trm);
 }
@@ -421,7 +421,7 @@ TEST_F(TestClassifyLoopExits, RegularInnerLoops) {
   trm.insert({"number of inner loops", 1});
   trm.insert({"number of inner loop exits", 1});
   trm.insert({"number of inner loop toplevel exits", 0});
-  trm.insert({"number of IO calls", 0});
+  trm.insert({"has IO calls", false});
   trm.insert({"number of non local exit calls", 0});
   ExpectTestPass(trm);
 }

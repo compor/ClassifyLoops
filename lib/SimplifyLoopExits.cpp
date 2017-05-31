@@ -228,7 +228,7 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
         report << ls.second.NumInnerLoops << "\t";
         report << ls.second.NumInnerLoopExits << "\t";
         report << ls.second.NumInnerLoopTopLevelExits << "\t";
-        report << ls.second.NumIOCalls << "\t";
+        report << ls.second.HasIOCalls << "\t";
         report << ls.second.NumNonLocalExits << "\t";
         report << ls.second.NumDiffExitLandings << "\t";
         report << ls.second.HasIteratorSeparableWork << "\t";
@@ -342,7 +342,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 #ifdef USE_APPLYIOATTRIBUTE
         if (TLI) {
           ApplyIOAttribute aioattr(*TLI);
-          sd.NumIOCalls += aioattr.hasIO(*L) ? 1 : 0;
+          sd.HasIOCalls |= aioattr.hasIO(*L);
         }
 #endif // USE_APPLYIOATTRIBUTE
 
@@ -354,7 +354,7 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 
         const auto foundIO = IOFuncs->find(calledfunc->getName().str());
         if (std::end(*IOFuncs) != foundIO)
-          sd.NumIOCalls++;
+          sd.HasIOCalls |= true;
 
         if (!NonLocalExitFuncs)
           continue;

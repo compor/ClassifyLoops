@@ -36,7 +36,7 @@ struct LoopStatsData {
   LoopStatsData()
       : LoopId(0), ContainingFunc{"-"}, NumHeaderExits(0), NumNonHeaderExits(0),
         NumInnerLoops(0), NumInnerLoopExits(0), NumInnerLoopTopLevelExits(0),
-        NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0),
+        HasIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0),
         HasIteratorSeparableWork(0) {}
 
   unsigned LoopId;
@@ -46,7 +46,7 @@ struct LoopStatsData {
   unsigned NumInnerLoops;
   unsigned NumInnerLoopExits;
   unsigned NumInnerLoopTopLevelExits;
-  unsigned NumIOCalls;
+  unsigned HasIOCalls;
   unsigned NumNonLocalExits;
   unsigned NumDiffExitLandings;
   unsigned HasIteratorSeparableWork;
