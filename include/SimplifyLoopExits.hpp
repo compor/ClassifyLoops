@@ -6,9 +6,16 @@
 // using llvm::FunctionPass
 
 #include <string>
+// using std::string
+
 #include <utility>
+// using std::pair
+
 #include <set>
+// using std::set
+
 #include <vector>
+// using std::vector
 
 #ifdef HAS_ITERWORK
 #include "DecoupleLoops.h"
@@ -20,17 +27,19 @@ class Function;
 class AnalysisUsage;
 class LoopInfo;
 class Loop;
+class TargetLibraryInfo;
 } // namespace llvm end
 
 namespace icsa {
 
 struct LoopStatsData {
   LoopStatsData()
-      : ContainingFunc{"-"}, NumHeaderExits(0), NumNonHeaderExits(0),
+      : LoopId(0), ContainingFunc{"-"}, NumHeaderExits(0), NumNonHeaderExits(0),
         NumInnerLoops(0), NumInnerLoopExits(0), NumInnerLoopTopLevelExits(0),
         NumIOCalls(0), NumNonLocalExits(0), NumDiffExitLandings(0),
         HasIteratorSeparableWork(0) {}
 
+  unsigned LoopId;
   std::string ContainingFunc;
   unsigned NumHeaderExits;
   unsigned NumNonHeaderExits;
@@ -64,8 +73,6 @@ struct ClassifyLoops : public llvm::ModulePass {
 
   bool runOnModule(llvm::Module &CurModule) override;
   void getAnalysisUsage(llvm::AnalysisUsage &AU) const override;
-
-  // llvm::LoopInfo *m_LI;
 };
 
 //

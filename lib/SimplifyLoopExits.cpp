@@ -28,6 +28,7 @@
 // using llvm::dyn_cast
 
 #include "llvm/Analysis/TargetLibraryInfo.h"
+// using llvm::TargetLibraryInfo
 // using llvm::TargetLibraryInfoWrapperPass
 
 #include "llvm/IR/LegacyPassManager.h"
@@ -220,6 +221,7 @@ bool ClassifyLoops::runOnModule(llvm::Module &CurModule) {
                    << "\" reason: " << err.message() << "\n";
     else {
       for (const auto &ls : totalLoopStats) {
+        report << ls.second.LoopId << "\t";
         report << ls.second.ContainingFunc << "\t";
         report << ls.second.NumHeaderExits << "\t";
         report << ls.second.NumNonHeaderExits << "\t";
@@ -272,13 +274,21 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 #endif // HAS_ITERWORK
                                  ) {
   std::vector<LoopStats> stats{};
-  const AnnotateLoops annotateQuery;
+
+#ifdef USE_ANNOTATELOOPS
+  AnnotateLoops queryAnnotator;
+#endif // USE_ANNOTATELOOPS
 
   for (const auto &L : LI) {
     if (L->getLoopDepth() > 1)
       continue;
 
     LoopStatsData sd{};
+
+#ifdef USE_ANNOTATELOOPS
+    if (queryAnnotator.hasAnnotatedId(*L))
+      sd.LoopId = queryAnnotator.getAnnotatedId(*L);
+#endif // USE_ANNOTATELOOPS
 
     const auto *containingFunc = L->getHeader()->getParent();
     if (containingFunc->hasName())
