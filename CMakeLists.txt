@@ -91,19 +91,15 @@ endif()
 
 find_package(ApplyIOAttribute CONFIG)
 
-if(ApplyIOAttribute_FOUND)
-  get_target_property(AIOATTR_LIB_LOCATION LLVMApplyIOAttributePass LOCATION)
-else()
-  message(WARNING "package ApplyIOAttribute was not found; skipping.")
+if(NOT ApplyIOAttribute_FOUND)
+  message(WARNING "package ApplyIOAttribute was not found")
 endif()
 
 
 find_package(AnnotateLoops CONFIG)
 
 if(NOT AnnotateLoops_FOUND)
-  message(WARNING "package AnnotateLoops was not found; skipping.")
-
-  return()
+  message(WARNING "package AnnotateLoops was not found")
 endif()
 
 
@@ -113,6 +109,8 @@ if(IS_DIRECTORY ${DECOUPLE_LOOPS_ROOT_DIR})
   set(DECOUPLE_LOOPS_INCLUDE_DIR "${DECOUPLE_LOOPS_ROOT_DIR}/include/")
   set(DECOUPLE_LOOPS_LIB_DIR "${DECOUPLE_LOOPS_ROOT_DIR}/lib/")
   set(DECOUPLE_LOOPS_LIB "dswp")
+else()
+  message(WARNING "package DecoupleLoops was not found")
 endif()
 
 #
