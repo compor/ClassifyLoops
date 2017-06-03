@@ -52,7 +52,7 @@
 #include <string>
 // using std::string
 
-#include "SimplifyLoopExits.hpp"
+#include "ClassifyLoops.hpp"
 
 namespace icsa {
 namespace {
