@@ -19,7 +19,7 @@ option(PRJ_SKIP_TESTS TRUE)
 
 get_version(VERSION PRJ_VERSION)
 
-set(PRJ_NAME SimplifyLoopExits)
+set(PRJ_NAME ClassifyLoops)
 
 # part of LLVM or standalone
 set(PRJ_STANDALONE_BUILD FALSE)
@@ -118,9 +118,7 @@ endif()
 set(LIB_NAME "LLVM${PRJ_NAME}Pass")
 set(LIB_SOURCES 
   "lib/ClassifyLoops.cpp"
-  "lib/SimplifyLoopExits.cpp"
-  "lib/ClassifyLoopsPass.cpp"
-  "lib/SimplifyLoopExitsPass.cpp")
+  "lib/ClassifyLoopsPass.cpp")
 
 if(NOT PRJ_USE_LLVM_INTERNAL_MODULE)
   add_library(${LIB_NAME} MODULE ${LIB_SOURCES})
