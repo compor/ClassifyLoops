@@ -2,6 +2,8 @@
 //
 //
 
+#include "ClassifyLoops.hpp"
+
 #include "llvm/IR/Type.h"
 // using llvm::Type
 
@@ -24,15 +26,13 @@
 #include "llvm/ADT/SmallVector.h"
 // using llvm::SmallVector
 
-#ifdef USE_APPLYIOATTRIBUTE
+#if CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
 #include "ApplyIOAttribute.hpp"
-#endif // USE_APPLYIOATTRIBUTE
+#endif // CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
 
-#ifdef USE_ANNOTATELOOPS
+#if CLASSIFYLOOPS_USES_ANNOTATELOOPS
 #include "AnnotateLoops.hpp"
-#endif // USE_ANNOTATELOOPS
-
-#include "ClassifyLoops.hpp"
+#endif // CLASSIFYLOOPS_USES_ANNOTATELOOPS
 
 namespace icsa {
 
@@ -40,16 +40,16 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
                                  const std::set<std::string> *IOFuncs,
                                  const std::set<std::string> *NonLocalExitFuncs,
                                  const llvm::TargetLibraryInfo *TLI
-#ifdef HAS_ITERWORK
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
                                  ,
                                  const DecoupleLoopsPass *DLP
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
                                  ) {
   std::vector<LoopStats> stats{};
 
-#ifdef USE_ANNOTATELOOPS
+#if CLASSIFYLOOPS_USES_ANNOTATELOOPS
   AnnotateLoops queryAnnotator;
-#endif // USE_ANNOTATELOOPS
+#endif // CLASSIFYLOOPS_USES_ANNOTATELOOPS
 
   for (const auto &L : LI) {
     if (L->getLoopDepth() > 1)
@@ -57,10 +57,10 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 
     LoopStatsData sd{};
 
-#ifdef USE_ANNOTATELOOPS
+#if CLASSIFYLOOPS_USES_ANNOTATELOOPS
     if (queryAnnotator.hasAnnotatedId(*L))
       sd.LoopId = queryAnnotator.getAnnotatedId(*L);
-#endif // USE_ANNOTATELOOPS
+#endif // CLASSIFYLOOPS_USES_ANNOTATELOOPS
 
     const auto *containingFunc = L->getHeader()->getParent();
     if (containingFunc->hasName())
@@ -110,12 +110,12 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
 
         const auto calledfunc = callinst->getCalledFunction();
 
-#ifdef USE_APPLYIOATTRIBUTE
+#if CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
         if (TLI) {
           ApplyIOAttribute aioattr(*TLI);
           sd.HasIOCalls |= aioattr.hasIO(*L);
         }
-#endif // USE_APPLYIOATTRIBUTE
+#endif // CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
 
         if (!calledfunc)
           continue;
@@ -136,10 +136,10 @@ std::vector<LoopStats> calculate(const llvm::LoopInfo &LI,
           sd.NumNonLocalExits++;
       }
 
-#ifdef HAS_ITERWORK
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
     if (DLP)
       sd.HasIteratorSeparableWork = DLP->hasWork(L);
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
 
     stats.emplace_back(L, sd);
   }

@@ -5,6 +5,8 @@
 #ifndef CLASSIFYLOOPS_HPP
 #define CLASSIFYLOOPS_HPP
 
+#include "Config.hpp"
+
 #include <string>
 // using std::string
 
@@ -17,10 +19,10 @@
 #include <vector>
 // using std::vector
 
-#ifdef HAS_ITERWORK
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
 #include "DecoupleLoops.h"
 using icsa::DecoupleLoopsPass;
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
 
 namespace llvm {
 class LoopInfo;
@@ -57,10 +59,10 @@ calculate(const llvm::LoopInfo &LI,
           const std::set<std::string> *IOFuncs = nullptr,
           const std::set<std::string> *NonLocalExitFuncs = nullptr,
           const llvm::TargetLibraryInfo *TLI = nullptr
-#ifdef HAS_ITERWORK
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
           ,
           const DecoupleLoopsPass *DLP = nullptr
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
           );
 
 } // namespace icsa end

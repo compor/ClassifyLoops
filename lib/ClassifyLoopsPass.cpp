@@ -2,6 +2,10 @@
 //
 //
 
+#include "ClassifyLoops.hpp"
+
+#include "ClassifyLoopsPass.hpp"
+
 #include "llvm/Pass.h"
 // using llvm::RegisterPass
 
@@ -52,13 +56,7 @@
 #include <string>
 // using std::string
 
-#include "Config.hpp"
-
 #include "BWList.hpp"
-
-#include "ClassifyLoops.hpp"
-
-#include "ClassifyLoopsPass.hpp"
 
 #define DEBUG_TYPE "classify-loop-exits"
 
@@ -67,8 +65,7 @@
 #define STRINGIFY_UTIL(x) #x
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
-#define PRJ_CMDLINE_DESC(x)                                                    \
-  x " (version: " STRINGIFY(CLASSIFYLOOPS_VERSION) ")"
+#define PRJ_CMDLINE_DESC(x) x " (version: " STRINGIFY(CLASSIFYLOOPS_VERSION) ")"
 
 static llvm::cl::opt<std::string>
     FuncWhileListFilename("classify-loops-fn-whitelist",
@@ -161,17 +158,21 @@ bool ClassifyLoopsPass::runOnModule(llvm::Module &CurModule) {
 
     const auto *LI =
         &getAnalysis<llvm::LoopInfoWrapperPass>(curFunc).getLoopInfo();
-#ifdef HAS_ITERWORK
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
     const auto *DLP = &getAnalysis<DecoupleLoopsPass>(curFunc);
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
 
-    const auto &TLI =
-        getAnalysis<llvm::TargetLibraryInfoWrapperPass>().getTLI();
-    const auto &loopstats = calculate(*LI, &IOFuncs, &NonLocalExitFuncs, &TLI
-#ifdef HAS_ITERWORK
+    llvm::TargetLibraryInfo *TLI = nullptr;
+
+#if CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
+    TLI = &getAnalysis<llvm::TargetLibraryInfoWrapperPass>().getTLI();
+#endif // CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
+
+    const auto &loopstats = calculate(*LI, &IOFuncs, &NonLocalExitFuncs, TLI
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
                                       ,
                                       DLP
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
                                       );
 
     totalLoopStats.insert(totalLoopStats.end(), loopstats.begin(),
@@ -211,12 +212,12 @@ void ClassifyLoopsPass::getAnalysisUsage(llvm::AnalysisUsage &AU) const {
   AU.setPreservesAll();
   AU.setPreservesCFG();
   AU.addRequiredTransitive<llvm::LoopInfoWrapperPass>();
-#ifdef USE_APPLYIOATTRIBUTE
+#if CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
   AU.addRequired<llvm::TargetLibraryInfoWrapperPass>();
-#endif // USE_APPLYIOATTRIBUTE
-#ifdef HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_APPLYIOATTRIBUTE
+#if CLASSIFYLOOPS_USES_DECOUPLELOOPS
   AU.addRequired<DecoupleLoopsPass>();
-#endif // HAS_ITERWORK
+#endif // CLASSIFYLOOPS_USES_DECOUPLELOOPS
 
   return;
 }

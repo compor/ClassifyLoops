@@ -92,25 +92,34 @@ endif()
 
 find_package(ApplyIOAttribute CONFIG)
 
-if(NOT ApplyIOAttribute_FOUND)
+if(ApplyIOAttribute_FOUND)
+  set(${PRJ_NAME_UPPER}_USES_APPLYIOATTRIBUTE 1)
+else()
+  set(${PRJ_NAME_UPPER}_USES_APPLYIOATTRIBUTE 0)
   message(WARNING "package ApplyIOAttribute was not found")
 endif()
 
 
 find_package(AnnotateLoops CONFIG)
 
-if(NOT AnnotateLoops_FOUND)
+if(AnnotateLoops_FOUND)
+  set(${PRJ_NAME_UPPER}_USES_ANNOTATELOOPS 1)
+else()
+  set(${PRJ_NAME_UPPER}_USES_ANNOTATELOOPS 0)
   message(WARNING "package AnnotateLoops was not found")
 endif()
 
 
 if(IS_DIRECTORY ${DECOUPLE_LOOPS_ROOT_DIR})
   message(STATUS "Found DecoupleLoops root directory: ${DECOUPLE_LOOPS_ROOT_DIR}")
-  set(DECOUPLE_LOOPS_FOUND ON)
+  set(DecoupleLoops_FOUND ON)
   set(DECOUPLE_LOOPS_INCLUDE_DIR "${DECOUPLE_LOOPS_ROOT_DIR}/include/")
   set(DECOUPLE_LOOPS_LIB_DIR "${DECOUPLE_LOOPS_ROOT_DIR}/lib/")
   set(DECOUPLE_LOOPS_LIB "dswp")
+
+  set(${PRJ_NAME_UPPER}_USES_DECOUPLELOOPS 1)
 else()
+  set(${PRJ_NAME_UPPER}_USES_DECOUPLELOOPS 0)
   message(WARNING "package DecoupleLoops was not found")
 endif()
 
@@ -153,27 +162,15 @@ endif()
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
 target_compile_definitions(${LIB_NAME} PRIVATE VERSION_STRING=${PRJ_VERSION})
 
-if(ApplyIOAttribute_FOUND)
-  target_compile_definitions(${LIB_NAME} PUBLIC USE_APPLYIOATTRIBUTE)
-endif()
-
-if(AnnotateLoops_FOUND)
-  target_compile_definitions(${LIB_NAME} PUBLIC USE_ANNOTATELOOPS)
-endif()
-
-if(DECOUPLE_LOOPS_FOUND)
-  target_compile_definitions(${LIB_NAME} PUBLIC HAS_ITERWORK)
-endif()
-
 target_include_directories(${LIB_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
-target_include_directories(${LIB_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
 target_include_directories(${LIB_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
 target_include_directories(${LIB_NAME} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
+target_include_directories(${LIB_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
 
-if(DECOUPLE_LOOPS_FOUND)
+if(DecoupleLoops_FOUND)
   target_include_directories(${LIB_NAME} PUBLIC ${DECOUPLE_LOOPS_INCLUDE_DIR})
 endif()
 
@@ -213,7 +210,7 @@ set(PRJ_CMAKE_CONFIG_FILE "config.cmake")
 
 set(DEPENDEE "")
 
-if(DECOUPLE_LOOPS_FOUND)
+if(DecoupleLoops_FOUND)
   list(APPEND DEPENDEE
     ${DECOUPLE_LOOPS_LIB_DIR}${TRGT_PREFIX}${DECOUPLE_LOOPS_LIB}${TRGT_SUFFIX})
 endif()
@@ -233,8 +230,7 @@ set_directory_properties(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES
 
 configure_file(
   "${CMAKE_CURRENT_SOURCE_DIR}/include/${PRJ_CONFIG_HEADER_FILE}.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/include/${PRJ_CONFIG_HEADER_FILE}"
-  @ONLY)
+  "${CMAKE_CURRENT_BINARY_DIR}/include/${PRJ_CONFIG_HEADER_FILE}")
 
 string(TOLOWER ${PRJ_NAME} PRJ_NAME_LOWER)
 configure_file(

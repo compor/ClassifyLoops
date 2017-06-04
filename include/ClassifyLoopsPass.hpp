@@ -5,6 +5,8 @@
 #ifndef CLASSIFYLOOPSPASS_HPP
 #define CLASSIFYLOOPSPASS_HPP
 
+#include "Config.hpp"
+
 #include "llvm/Pass.h"
 // using llvm::ModulePass
 
