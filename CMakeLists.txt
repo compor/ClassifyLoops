@@ -20,6 +20,7 @@ option(PRJ_SKIP_TESTS TRUE)
 get_version(VERSION PRJ_VERSION)
 
 set(PRJ_NAME ClassifyLoops)
+string(TOUPPER ${PRJ_NAME} PRJ_NAME_UPPER)
 
 # part of LLVM or standalone
 set(PRJ_STANDALONE_BUILD FALSE)

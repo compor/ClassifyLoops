@@ -68,7 +68,7 @@
 #define STRINGIFY(x) STRINGIFY_UTIL(x)
 
 #define PRJ_CMDLINE_DESC(x)                                                    \
-  x " (version: " STRINGIFY(SIMPLIFYLOOPEXITS_VERSION) ")"
+  x " (version: " STRINGIFY(CLASSIFYLOOPS_VERSION) ")"
 
 static llvm::cl::opt<std::string>
     FuncWhileListFilename("classify-loops-fn-whitelist",
