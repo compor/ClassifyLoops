@@ -58,7 +58,7 @@
 
 #include "BWList.hpp"
 
-#define DEBUG_TYPE "classify-loop-exits"
+#define DEBUG_TYPE "classify-loops"
 
 // plugin registration for opt
 

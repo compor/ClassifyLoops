@@ -44,7 +44,6 @@ set_policies(CMP0056 NEW)
 
 handle_llvm_dependency(${PRJ_STANDALONE_BUILD})
 
-
 # project configuration
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
@@ -160,15 +159,14 @@ if(AnnotateLoops_FOUND)
 endif()
 
 target_compile_definitions(${LIB_NAME} PUBLIC ${LLVM_DEFINITIONS})
-target_compile_definitions(${LIB_NAME} PRIVATE VERSION_STRING=${PRJ_VERSION})
 
 target_include_directories(${LIB_NAME} PUBLIC ${LLVM_INCLUDE_DIRS})
+target_include_directories(${LIB_NAME} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
 target_include_directories(${LIB_NAME} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>)
 target_include_directories(${LIB_NAME} PUBLIC
   $<INSTALL_INTERFACE:${CMAKE_INSTALL_PREFIX}/include>)
-target_include_directories(${LIB_NAME} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>)
 
 if(DecoupleLoops_FOUND)
   target_include_directories(${LIB_NAME} PUBLIC ${DECOUPLE_LOOPS_INCLUDE_DIR})
