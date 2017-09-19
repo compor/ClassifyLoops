@@ -1,5 +1,5 @@
 
-# LLVM SimplifyLoopExits opt pass
+# LLVM ClassifyLoops opt pass
 
 Transform loop with multiple exits to use a single exit.
 
@@ -18,12 +18,12 @@ Transform loop with multiple exits to use a single exit.
 ### Using opt
 
 - make sure LLVM's opt is in your `$PATH`
-- `opt -load [path to plugin]/libLLVMSimplifyLoopPass.so -simplify-loop-exits foo.bc -o foo.out.bc`
+- `opt -load [path to plugin]/libLLVMClassifyLoopPass.so -simplify-loop-exits foo.bc -o foo.out.bc`
 
 ### Using clang
 
 - make sure LLVM's clang is in your `$PATH`
-- `clang -Xclang -load -Xclang [path to plugin]/libLLVMSimplifyLoopExitsPass.so foo.c -o foo`
+- `clang -Xclang -load -Xclang [path to plugin]/libLLVMClassifyLoopExitsPass.so foo.c -o foo`
    
 ## Requirements
 
